@@ -1,5 +1,5 @@
 import { pick, convert } from "../mapper.js";
-import { upperCase, parseDate, parseEpisode } from "./functions.js";
+import { upperCase, parseDate, parseEpisode, length } from "./functions.js";
 import { initial } from "./initial.js";
 
 const paginationSchema = {
@@ -11,7 +11,7 @@ const paginationSchema = {
 
 const episodeSchema = {
   id: pick(),
-  type: "Episod",
+  type: "Episode",
   name: pick().pipe(upperCase).fallback("UNKNOWN"),
   date: pick("air_date").pipe(parseDate),
   season: pick("episode")
@@ -21,13 +21,14 @@ const episodeSchema = {
     .pipe((v) => parseEpisode(v)?.episode)
     .fallback(null),
   URL: pick("url"),
+  numberOfCharacters: pick("characters").pipe(length),
 };
 
 const rootSchema = {
   pagination: pick("info").apply(paginationSchema),
   episodes: pick("results").applyOnly(
     episodeSchema,
-    (episode) => parseDate(episode.air_date)?.year > 2014
+    (episode) => parseDate(episode.air_date)?.year === 2013
   ),
 };
 

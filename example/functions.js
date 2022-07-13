@@ -20,3 +20,8 @@ export const parseEpisode = (episodeString) => {
     episode,
   };
 };
+
+export const length = (list) => {
+  if (!Array.isArray(list)) return;
+  return list.length;
+};

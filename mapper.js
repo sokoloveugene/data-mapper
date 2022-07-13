@@ -1,20 +1,25 @@
-import { get, set, isInstanceOf, isUndefined, dummy } from "./utils.js";
+import {
+  get,
+  set,
+  isInstanceOf,
+  isUndefined,
+  dummy,
+  isObject,
+} from "./utils.js";
 
 export const convert = (schema, data) => {
-  // TODO in case of nested schema resultcan be undefined;
+  if (!isObject(data)) return;
+
   const result = {};
 
   for (const [destination, config] of Object.entries(schema)) {
-    if (!isInstanceOf(config, "Mapper")) {
-      set(result, destination, config);
-      continue;
-    }
+    const value = isInstanceOf(config, "Mapper")
+      ? config._setDestination(destination)._execute(data)
+      : config;
 
-    const value = config.setDestination(destination).execute(data);
+    if (isUndefined(value)) continue;
 
-    if (!isUndefined(value)) {
-      set(result, destination, value);
-    }
+    set(result, destination, value);
   }
 
   return result;
@@ -23,9 +28,10 @@ export const convert = (schema, data) => {
 const MODE = {
   DEFAULT: "DEFAULT",
   APPLY_SCHEMA: "APPLY_SCHEMA",
-  APPLY_SCHEMA_EACH: "APPLY_SCHEMA_EACH",
+  APPLY_SCHEMA_EVERY: "APPLY_SCHEMA_EVERY",
   APPLY_SCHEMA_ONLY: "APPLY_SCHEMA_ONLY",
   APPLY_SWITCH: "APPLY_SWITCH",
+  APPLY_SWITCH_EVERY: "APPLY_SWITCH_EVERY",
 };
 
 class Mapper {
@@ -49,36 +55,36 @@ class Mapper {
     return this;
   }
 
-  setDestination(path) {
-    if (!this.from.length) {
-      this.from = [path];
-    }
-    return this;
-  }
-
   apply(schema) {
     this.nestedSchema = schema;
     this.mode = MODE.APPLY_SCHEMA;
     return this;
   }
 
-  applyEach(schema) {
+  applyEvery(schema) {
     this.nestedSchema = schema;
-    this.mode = MODE.APPLY_SCHEMA_EACH;
+    this.mode = MODE.APPLY_SCHEMA_EVERY;
     return this;
   }
 
-  applyOnly(schema, predicate) {
+  applyOnly(schema, predicate = dummy) {
     this.nestedSchema = schema;
     this.predicate = predicate;
     this.mode = MODE.APPLY_SCHEMA_ONLY;
     return this;
   }
 
-  applySwitch(switchMap, predicate) {
+  applySwitch(switchMap, predicate = dummy) {
     this.switchMap = switchMap;
     this.predicate = predicate;
     this.mode = MODE.APPLY_SWITCH;
+    return this;
+  }
+
+  applySwitchEvery(switchMap, predicate = dummy) {
+    this.switchMap = switchMap;
+    this.predicate = predicate;
+    this.mode = MODE.APPLY_SWITCH_EVERY;
     return this;
   }
 
@@ -86,7 +92,7 @@ class Mapper {
     return {
       [MODE.DEFAULT]: (value) => (isUndefined(value) ? this.default : value),
       [MODE.APPLY_SCHEMA]: (value) => convert(this.nestedSchema, value),
-      [MODE.APPLY_SCHEMA_EACH]: (values) => {
+      [MODE.APPLY_SCHEMA_EVERY]: (values) => {
         const mapped = values?.map((value) =>
           convert(this.nestedSchema, value)
         );
@@ -105,10 +111,26 @@ class Mapper {
         const result = schemaByType ? convert(schemaByType, value) : undefined;
         return isUndefined(result) ? this.default : result;
       },
+      [MODE.APPLY_SWITCH_EVERY]: (values) => {
+        const mapped = values?.reduce((acc, value) => {
+          const type = this.predicate(value);
+          const schemaByType = this.switchMap[type];
+          const isValid = !!schemaByType;
+          return isValid ? [...acc, convert(schemaByType, value)] : acc;
+        }, []);
+        return isUndefined(mapped) || !mapped.length ? this.default : mapped;
+      },
     }[this.mode];
   }
 
-  execute(data) {
+  _setDestination(path) {
+    if (!this.from.length) {
+      this.from = [path];
+    }
+    return this;
+  }
+
+  _execute(data) {
     const initial = this.from.map((key) => get(data, key));
 
     const [calculated] = this.mappers.reduce(
