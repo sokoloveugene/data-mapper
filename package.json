@@ -1,0 +1,13 @@
+{
+  "name": "data-mapper",
+  "version": "1.0.0",
+  "description": "Map data using schema",
+  "main": "example.js",
+  "scripts": {
+    "example": "node example/index.js"
+  },
+  "keywords": [],
+  "author": "Yevhenii",
+  "license": "ISC",
+  "type": "module"
+}
