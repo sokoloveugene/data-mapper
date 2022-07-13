@@ -19,6 +19,16 @@ const timestampSchema = {
   short: pick(),
 };
 
+const defaultVersion = {
+  type: "default subscription",
+  hasAccess: false,
+};
+
+const proVersion = {
+  type: "pro subscription",
+  hasAccess: true,
+};
+
 const schema = {
   staticValue: "HELLO WORLD",
   empty: pick().pipe(emptyToNull),
@@ -32,8 +42,16 @@ const schema = {
   "country.from": pick("user.main.country.0.name").fallback(null),
   "info.languages.all": pick("langs").applyEach(languageSchema).fallback([]),
   "info.languages.cool": pick("langs")
-    .applyWhen(languageSchema, (lang) => lang?.short === "JS")
+    .applyOnly(languageSchema, (lang) => lang.short === "JS")
     .fallback([]),
+
+  switchTest: pick("user.isAdmin").applySwitch(
+    {
+      true: proVersion,
+      false: defaultVersion,
+    },
+    (isAdmin) => Boolean(isAdmin)
+  ),
 };
 
 console.log(JSON.stringify(convert(schema, initial), null, 2));

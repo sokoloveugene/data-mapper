@@ -1,4 +1,4 @@
-import { get, set, isInstanceOf, isUndefined } from "./utils.js";
+import { get, set, isInstanceOf, isUndefined, dummy } from "./utils.js";
 
 export const convert = (schema, data) => {
   // TODO in case of nested schema resultcan be undefined;
@@ -24,7 +24,8 @@ const MODE = {
   DEFAULT: "DEFAULT",
   APPLY_SCHEMA: "APPLY_SCHEMA",
   APPLY_SCHEMA_EACH: "APPLY_SCHEMA_EACH",
-  APPLY_SCHEMA_WHEN: "APPLY_SCHEMA_WHEN",
+  APPLY_SCHEMA_ONLY: "APPLY_SCHEMA_ONLY",
+  APPLY_SWITCH: "APPLY_SWITCH",
 };
 
 class Mapper {
@@ -33,8 +34,9 @@ class Mapper {
     this.mappers = [];
     this.default = undefined;
     this.nestedSchema = undefined;
+    this.switchMap = {};
+    this.predicate = dummy;
     this.mode = MODE.DEFAULT;
-    this.predicate = () => false;
   }
 
   pipe(...fns) {
@@ -66,10 +68,17 @@ class Mapper {
     return this;
   }
 
-  applyWhen(schema, predicate = this.predicate) {
+  applyOnly(schema, predicate) {
     this.nestedSchema = schema;
     this.predicate = predicate;
-    this.mode = MODE.APPLY_SCHEMA_WHEN;
+    this.mode = MODE.APPLY_SCHEMA_ONLY;
+    return this;
+  }
+
+  applySwitch(switchMap, predicate) {
+    this.switchMap = switchMap;
+    this.predicate = predicate;
+    this.mode = MODE.APPLY_SWITCH;
     return this;
   }
 
@@ -83,12 +92,18 @@ class Mapper {
         );
         return isUndefined(mapped) ? this.default : mapped;
       },
-      [MODE.APPLY_SCHEMA_WHEN]: (values) => {
+      [MODE.APPLY_SCHEMA_ONLY]: (values) => {
         const mapped = values?.reduce((acc, value) => {
           const isValid = this.predicate(value);
           return isValid ? [...acc, convert(this.nestedSchema, value)] : acc;
         }, []);
         return isUndefined(mapped) || !mapped.length ? this.default : mapped;
+      },
+      [MODE.APPLY_SWITCH]: (value) => {
+        const type = this.predicate(value);
+        const schemaByType = this.switchMap[type];
+        const result = schemaByType ? convert(schemaByType, value) : undefined;
+        return isUndefined(result) ? this.default : result;
       },
     }[this.mode];
   }

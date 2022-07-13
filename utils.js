@@ -10,6 +10,7 @@ const isNullOrUndefined = (val) => val === null || val === undefined;
 
 export const isUndefined = (val) => val === undefined;
 
+export const dummy = () => undefined;
 
 export const isInstanceOf = (obj, constrName) =>
   obj && obj.constructor && obj.constructor.name === constrName;
@@ -57,4 +58,3 @@ export const get = (obj, path, defaultValue) => {
       : obj[path]
     : result;
 };
-
