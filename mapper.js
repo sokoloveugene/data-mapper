@@ -29,7 +29,9 @@ export const convert = ({ schema, data, errorStorage, prefixes = [] }) => {
 
     if (isUndefined(value)) continue;
 
-    set(result, destination, value);
+    destination.startsWith("...")
+      ? Object.assign(result, value)
+      : set(result, destination, value);
   }
 
   if (isRoot) {
@@ -209,8 +211,8 @@ class Mapper {
     const errors = typeCheck(this.keys, args, this.types);
 
     for (const { key, error } of errors) {
-      const errorPath = [...this.prefixes, key, "TYPE_ERROR"].join(".");
-      set(this.errorStorage, errorPath, error);
+      const errorPath = [...this.prefixes, key].join(".");
+      this.errorStorage[errorPath] = error;
     }
   }
 

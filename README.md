@@ -83,3 +83,25 @@ const languageSchema = {
     .fallback([])
 }
 ```
+
+### Spread feature
+```
+const data = {
+  id: "ID",
+  user: {
+    name: "John Dou",
+    type: "Admin",
+  },
+};
+
+const schema = {
+  id: pick(),
+  "...": pick("user").apply({
+    name: pick(),
+    isAdmin: pick("type").pipe((v) => v === "Admin"),
+  }),
+};
+
+// { id: 'ID', name: 'John Dou', isAdmin: true }
+const result = convert({ schema, data });
+```
