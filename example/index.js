@@ -12,12 +12,14 @@ const paginationSchema = {
 const episodeSchema = {
   id: pick(),
   type: "Episode",
-  name: pick().pipe(upperCase).fallback("UNKNOWN"),
-  date: pick("air_date").pipe(parseDate),
+  name: pick().type("?string").pipe(upperCase).fallback("UNKNOWN"),
+  date: pick("air_date").type("string").pipe(parseDate),
   season: pick("episode")
+    .type("string")
     .pipe((v) => parseEpisode(v)?.season)
     .fallback(null),
   episode: pick()
+    .type("string")
     .pipe((v) => parseEpisode(v)?.episode)
     .fallback(null),
   URL: pick("url"),
@@ -25,11 +27,13 @@ const episodeSchema = {
 };
 
 const rootSchema = {
-  pagination: pick("info").apply(paginationSchema),
-  episodes: pick("results").applyOnly(
-    episodeSchema,
-    (episode) => parseDate(episode.air_date)?.year === 2013
-  ),
+  pagination: pick("info").type("object").apply(paginationSchema),
+  episodes: pick("results")
+    .type("array")
+    .applyOnly(
+      episodeSchema,
+      (episode) => parseDate(episode.air_date)?.year === 2013
+    ),
 };
 
 console.log(JSON.stringify(convert(rootSchema, initial), null, 2));

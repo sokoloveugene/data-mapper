@@ -6,6 +6,7 @@ import {
   dummy,
   isObject,
 } from "./utils.js";
+import { typeCheck } from "./type-check.js";
 
 export const convert = (schema, data) => {
   if (!isObject(data)) return;
@@ -35,18 +36,24 @@ const MODE = {
 };
 
 class Mapper {
-  constructor(from = []) {
-    this.from = from;
+  constructor(keys = []) {
+    this.keys = keys;
     this.mappers = [];
     this.default = undefined;
-    this.nestedSchema = undefined;
+    this.childSchema = undefined;
     this.switchMap = {};
     this.predicate = dummy;
+    this.types = [];
     this.mode = MODE.DEFAULT;
   }
 
   pipe(...fns) {
     this.mappers.push(...fns);
+    return this;
+  }
+
+  type(...types) {
+    this.types = types;
     return this;
   }
 
@@ -56,19 +63,19 @@ class Mapper {
   }
 
   apply(schema) {
-    this.nestedSchema = schema;
+    this.childSchema = schema;
     this.mode = MODE.APPLY_SCHEMA;
     return this;
   }
 
   applyEvery(schema) {
-    this.nestedSchema = schema;
+    this.childSchema = schema;
     this.mode = MODE.APPLY_SCHEMA_EVERY;
     return this;
   }
 
   applyOnly(schema, predicate = dummy) {
-    this.nestedSchema = schema;
+    this.childSchema = schema;
     this.predicate = predicate;
     this.mode = MODE.APPLY_SCHEMA_ONLY;
     return this;
@@ -91,17 +98,15 @@ class Mapper {
   get executor() {
     return {
       [MODE.DEFAULT]: (value) => (isUndefined(value) ? this.default : value),
-      [MODE.APPLY_SCHEMA]: (value) => convert(this.nestedSchema, value),
+      [MODE.APPLY_SCHEMA]: (value) => convert(this.childSchema, value),
       [MODE.APPLY_SCHEMA_EVERY]: (values) => {
-        const mapped = values?.map((value) =>
-          convert(this.nestedSchema, value)
-        );
+        const mapped = values?.map((value) => convert(this.childSchema, value));
         return isUndefined(mapped) ? this.default : mapped;
       },
       [MODE.APPLY_SCHEMA_ONLY]: (values) => {
         const mapped = values?.reduce((acc, value) => {
           const isValid = this.predicate(value);
-          return isValid ? [...acc, convert(this.nestedSchema, value)] : acc;
+          return isValid ? [...acc, convert(this.childSchema, value)] : acc;
         }, []);
         return isUndefined(mapped) || !mapped.length ? this.default : mapped;
       },
@@ -124,14 +129,21 @@ class Mapper {
   }
 
   _setDestination(path) {
-    if (!this.from.length) {
-      this.from = [path];
+    if (!this.keys.length) {
+      this.keys = [path];
     }
     return this;
   }
 
+  _validate(args) {
+    const error = typeCheck(this.keys, args, this.types);
+    if (error) console.log(error);
+  }
+
   _execute(data) {
-    const initial = this.from.map((key) => get(data, key));
+    const initial = this.keys.map((key) => get(data, key));
+
+    this._validate(initial);
 
     const [calculated] = this.mappers.reduce(
       (composed, f) => [f(...composed)],

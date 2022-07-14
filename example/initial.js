@@ -37,7 +37,7 @@ export const initial = {
     },
     {
       id: 2,
-      name: "Lawnmower Dog",
+      __name__: "Lawnmower Dog",
       air_date: "December 9, 2013",
       episode: "S01E02",
       characters: [
