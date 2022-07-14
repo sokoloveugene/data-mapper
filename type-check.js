@@ -14,7 +14,7 @@ const types = {
 };
 
 const matchType =
-  ({ validator, isOptional = false }) =>
+  (validator, isOptional = false) =>
   (value) => {
     return isOptional
       ? validator(value) || isUndefined(value)
@@ -22,23 +22,23 @@ const matchType =
   };
 
 const checks = {
-  string: matchType({ validator: types.STRING }),
-  "?string": matchType({ validator: types.STRING, isOptional: true }),
-  number: matchType({ validator: types.NUMBER }),
-  "?number": matchType({ validator: types.NUMBER, isOptional: true }),
-  boolean: matchType({ validator: types.BOOL }),
-  "?boolean": matchType({ validator: types.BOOL, isOptional: true }),
-  object: matchType({ validator: types.OBJECT }),
-  "?object": matchType({ validator: types.OBJECT, isOptional: true }),
-  array: matchType({ validator: types.ARRAY }),
-  "?array": matchType({ validator: types.ARRAY, isOptional: true }),
-  null: matchType({ validator: types.NULL }),
-  "?null": matchType({ validator: types.NULL, isOptional: true }),
-  any: matchType({ validator: types.ANY }),
+  string: matchType(types.STRING),
+  "?string": matchType(types.STRING, true),
+  number: matchType(types.NUMBER),
+  "?number": matchType(types.NUMBER, true),
+  boolean: matchType(types.BOOL),
+  "?boolean": matchType(types.BOOL, true),
+  object: matchType(types.OBJECT),
+  "?object": matchType(types.OBJECT, true),
+  array: matchType(types.ARRAY),
+  "?array": matchType(types.ARRAY, true),
+  null: matchType(types.NULL),
+  "?null": matchType(types.NULL, true),
+  any: matchType(types.ANY),
 };
 
 export const typeCheck = (keys, args, types) => {
-  const errors = {};
+  const errors = [];
 
   for (let i = 0; i < args.length; i++) {
     const [key, value, type] = [keys[i], args[i], types[i]];
@@ -50,12 +50,9 @@ export const typeCheck = (keys, args, types) => {
     const isValid = check(value);
 
     if (!isValid) {
-      errors[key] = {
-        expected: type,
-        received: value,
-      };
+      errors.push({ key, error: `Expected ${type}, Received ${value}` });
     }
   }
 
-  return Object.keys(errors).length ? errors : undefined;
+  return errors;
 };

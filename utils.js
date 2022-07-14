@@ -5,6 +5,7 @@ const isKey = (value) => /^\w*$/.test(value);
 const stringToPath = (input) =>
   compact(input.replace(/["|']|\]/g, "").split(/\.|\[/));
 const isNullOrUndefined = (val) => val === null || val === undefined;
+
 // SERVICE FUNCTIONS ==========================================================
 
 export const isObject = (value) => Boolean(value) && typeof value === "object";

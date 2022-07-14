@@ -7,20 +7,36 @@ import {
   isObject,
 } from "./utils.js";
 import { typeCheck } from "./type-check.js";
+import fs from "fs";
 
-export const convert = (schema, data) => {
-  if (!isObject(data)) return;
+export const convert = ({ schema, data, errorStorage, prefixes = [] }) => {
+  if (!isObject(data)) data = {};
+
+  const isRoot = isUndefined(errorStorage)
+    ? ((errorStorage = {}), true)
+    : false;
 
   const result = {};
 
   for (const [destination, config] of Object.entries(schema)) {
     const value = isInstanceOf(config, "Mapper")
-      ? config._setDestination(destination)._execute(data)
+      ? config
+          ._setDestination(destination)
+          ._setPrefixes(prefixes)
+          ._setErrorStorage(errorStorage)
+          ._execute(data)
       : config;
 
     if (isUndefined(value)) continue;
 
     set(result, destination, value);
+  }
+
+  if (isRoot) {
+    fs.writeFileSync(
+      "example/error.txt",
+      JSON.stringify(errorStorage, null, 2)
+    );
   }
 
   return result;
@@ -45,6 +61,9 @@ class Mapper {
     this.predicate = dummy;
     this.types = [];
     this.mode = MODE.DEFAULT;
+
+    this.errorStorage = undefined;
+    this.prefixes = [];
   }
 
   pipe(...fns) {
@@ -98,30 +117,71 @@ class Mapper {
   get executor() {
     return {
       [MODE.DEFAULT]: (value) => (isUndefined(value) ? this.default : value),
-      [MODE.APPLY_SCHEMA]: (value) => convert(this.childSchema, value),
+      [MODE.APPLY_SCHEMA]: (value) => {
+        return convert({
+          schema: this.childSchema,
+          data: value,
+          errorStorage: this.errorStorage,
+          prefixes: [...this.prefixes, this.keys[0]],
+        });
+      },
       [MODE.APPLY_SCHEMA_EVERY]: (values) => {
-        const mapped = values?.map((value) => convert(this.childSchema, value));
+        const mapped = values?.map((value, index) =>
+          convert({
+            schema: this.childSchema,
+            data: value,
+            errorStorage: this.errorStorage,
+            prefixes: [...this.prefixes, this.keys[0], index],
+          })
+        );
         return isUndefined(mapped) ? this.default : mapped;
       },
       [MODE.APPLY_SCHEMA_ONLY]: (values) => {
-        const mapped = values?.reduce((acc, value) => {
+        const mapped = values?.reduce((acc, value, index) => {
           const isValid = this.predicate(value);
-          return isValid ? [...acc, convert(this.childSchema, value)] : acc;
+          return isValid
+            ? [
+                ...acc,
+                convert({
+                  schema: this.childSchema,
+                  data: value,
+                  errorStorage: this.errorStorage,
+                  prefixes: [...this.prefixes, this.keys[0], index],
+                }),
+              ]
+            : acc;
         }, []);
         return isUndefined(mapped) || !mapped.length ? this.default : mapped;
       },
       [MODE.APPLY_SWITCH]: (value) => {
         const type = this.predicate(value);
         const schemaByType = this.switchMap[type];
-        const result = schemaByType ? convert(schemaByType, value) : undefined;
+        const result = schemaByType
+          ? convert({
+              schema: schemaByType,
+              data: value,
+              errorStorage: this.errorStorage,
+              prefixes: [...this.prefixes, this.keys[0]], // TODO CHECK
+            })
+          : undefined;
         return isUndefined(result) ? this.default : result;
       },
       [MODE.APPLY_SWITCH_EVERY]: (values) => {
-        const mapped = values?.reduce((acc, value) => {
+        const mapped = values?.reduce((acc, value, index) => {
           const type = this.predicate(value);
           const schemaByType = this.switchMap[type];
           const isValid = !!schemaByType;
-          return isValid ? [...acc, convert(schemaByType, value)] : acc;
+          return isValid
+            ? [
+                ...acc,
+                convert({
+                  schema: schemaByType,
+                  data: value,
+                  errorStorage: this.errorStorage,
+                  prefixes: [...this.prefixes, this.keys[0], index],
+                }),
+              ]
+            : acc;
         }, []);
         return isUndefined(mapped) || !mapped.length ? this.default : mapped;
       },
@@ -135,9 +195,23 @@ class Mapper {
     return this;
   }
 
+  _setPrefixes(prefixes) {
+    this.prefixes = prefixes;
+    return this;
+  }
+
+  _setErrorStorage(errorStorage) {
+    this.errorStorage = errorStorage;
+    return this;
+  }
+
   _validate(args) {
-    const error = typeCheck(this.keys, args, this.types);
-    if (error) console.log(error);
+    const errors = typeCheck(this.keys, args, this.types);
+
+    for (const { key, error } of errors) {
+      const errorPath = [...this.prefixes, key, "TYPE_ERROR"].join(".");
+      set(this.errorStorage, errorPath, error);
+    }
   }
 
   _execute(data) {

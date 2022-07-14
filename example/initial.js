@@ -38,7 +38,7 @@ export const initial = {
     {
       id: 2,
       __name__: "Lawnmower Dog",
-      air_date: "December 9, 2013",
+      __air_date__: "December 9, 2013",
       episode: "S01E02",
       characters: [
         "https://rickandmortyapi.com/api/character/1",
@@ -188,7 +188,7 @@ export const initial = {
     {
       id: 7,
       name: "Raising Gazorpazorp",
-      air_date: "March 10, 2014",
+      air_date: null,
       episode: "S01E07",
       characters: [
         "https://rickandmortyapi.com/api/character/1",
