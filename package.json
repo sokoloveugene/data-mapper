@@ -4,10 +4,15 @@
   "description": "Map data using schema",
   "main": "example.js",
   "scripts": {
+    "test": "jest",
     "example": "node example/index.js"
   },
   "keywords": [],
   "author": "Yevhenii",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.18.6",
+    "jest": "^28.1.3"
+  }
 }
