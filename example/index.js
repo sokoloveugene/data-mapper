@@ -36,6 +36,4 @@ const rootSchema = {
     ),
 };
 
-console.log(
-  JSON.stringify(convert({ schema: rootSchema, data: initial }), null, 2)
-);
+console.log(JSON.stringify(convert(rootSchema, initial), null, 2));

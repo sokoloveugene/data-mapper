@@ -9,7 +9,7 @@ import {
 import { typeCheck } from "./type-check.js";
 import fs from "fs";
 
-export const convert = ({ schema, data, errorStorage, prefixes = [] }) => {
+export const convert = (schema, data, errorStorage, prefixes = []) => {
   if (!isObject(data)) data = {};
 
   const isRoot = isUndefined(errorStorage)
@@ -120,21 +120,18 @@ class Mapper {
     return {
       [MODE.DEFAULT]: (value) => (isUndefined(value) ? this.default : value),
       [MODE.APPLY_SCHEMA]: (value) => {
-        return convert({
-          schema: this.childSchema,
-          data: value,
-          errorStorage: this.errorStorage,
-          prefixes: [...this.prefixes, this.keys[0]],
-        });
+        return convert(this.childSchema, value, this.errorStorage, [
+          ...this.prefixes,
+          this.keys[0],
+        ]);
       },
       [MODE.APPLY_SCHEMA_EVERY]: (values) => {
         const mapped = values?.map((value, index) =>
-          convert({
-            schema: this.childSchema,
-            data: value,
-            errorStorage: this.errorStorage,
-            prefixes: [...this.prefixes, this.keys[0], index],
-          })
+          convert(this.childSchema, value, this.errorStorage, [
+            ...this.prefixes,
+            this.keys[0],
+            index,
+          ])
         );
         return isUndefined(mapped) ? this.default : mapped;
       },
@@ -144,12 +141,11 @@ class Mapper {
           return isValid
             ? [
                 ...acc,
-                convert({
-                  schema: this.childSchema,
-                  data: value,
-                  errorStorage: this.errorStorage,
-                  prefixes: [...this.prefixes, this.keys[0], index],
-                }),
+                convert(this.childSchema, value, this.errorStorage, [
+                  ...this.prefixes,
+                  this.keys[0],
+                  index,
+                ]),
               ]
             : acc;
         }, []);
@@ -159,12 +155,10 @@ class Mapper {
         const type = this.predicate(value);
         const schemaByType = this.switchMap[type];
         const result = schemaByType
-          ? convert({
-              schema: schemaByType,
-              data: value,
-              errorStorage: this.errorStorage,
-              prefixes: [...this.prefixes, this.keys[0]], // TODO CHECK
-            })
+          ? convert(schemaByType, value, this.errorStorage, [
+              ...this.prefixes,
+              this.keys[0],
+            ])
           : undefined;
         return isUndefined(result) ? this.default : result;
       },
@@ -176,12 +170,11 @@ class Mapper {
           return isValid
             ? [
                 ...acc,
-                convert({
-                  schema: schemaByType,
-                  data: value,
-                  errorStorage: this.errorStorage,
-                  prefixes: [...this.prefixes, this.keys[0], index],
-                }),
+                convert(schemaByType, value, this.errorStorage, [
+                  ...this.prefixes,
+                  this.keys[0],
+                  index,
+                ]),
               ]
             : acc;
         }, []);
