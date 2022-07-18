@@ -18,6 +18,10 @@ const src2 = {
   },
 };
 
+const src3 = {
+  list: [src.employment, src2.employment],
+};
+
 describe("Switch", () => {
   const previousEmploymentSchema = {
     isActive: false,
@@ -62,5 +66,37 @@ describe("Switch", () => {
 
     expect(convert(schema, src)).toEqual(expected);
     expect(convert(schema, src2)).toEqual(expected2);
+  });
+
+  test("for every item in the list", () => {
+    const schema = {
+      list: pick().applySwitchEvery(
+        {
+          true: previousEmploymentSchema,
+          false: currentEmploymentSchema,
+        },
+        (employment) => Boolean(employment.end)
+      ),
+    };
+
+    const expected = {
+      list: [
+        {
+          isActive: false,
+          company: "Super Shops",
+          occupation: "Information security specialist",
+        },
+        {
+          isActive: true,
+          from: "September 5, 2020",
+          company: "Custom Lawn Care",
+          occupation: "Human resources administrative assistant",
+        },
+      ],
+    };
+
+    const res = convert(schema, src3);
+    console.log(JSON.stringify(res, null, 2));
+    expect(res).toEqual(expected);
   });
 });
