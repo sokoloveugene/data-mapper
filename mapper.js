@@ -5,7 +5,8 @@ import {
   isUndefined,
   dummy,
   isObject,
-  notEmpty
+  notEmpty,
+  toError
 } from "./utils.js";
 import { typeCheck } from "./type-check.js";
 import fs from "fs";
@@ -40,6 +41,8 @@ export const convert = (schema, data, errorStorage, prefixes = []) => {
       "example/error.txt",
       JSON.stringify(errorStorage, null, 2)
     );
+
+    throw new Error(toError(errorStorage))
   }
 
   return result;
@@ -215,12 +218,14 @@ class Mapper {
 
     this._validate(initial);
 
-    const [calculated] = this.mappers.reduce(
-      (composed, f) => [f(...composed)],
-      initial
-    );
+    try {
+      const [calculated] = this.mappers.reduce(
+        (composed, f) => [f(...composed)],
+        initial
+      );
 
-    return this.executor(calculated);
+      return this.executor(calculated);
+    } catch {}
   }
 }
 

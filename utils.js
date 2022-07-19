@@ -6,9 +6,18 @@ const stringToPath = (input) =>
   compact(input.replace(/["|']|\]/g, "").split(/\.|\[/));
 const isNullOrUndefined = (val) => val === null || val === undefined;
 
+// SERVICE FUNCTIONS ==========================================================
+
+export const toError = (obj) => JSON.stringify(obj, null, 2)
+
 export const notEmpty = (obj) => obj && Object.keys(obj).length;
 
-// SERVICE FUNCTIONS ==========================================================
+export const typeOf = (value) =>
+  Object.prototype.toString
+    .call(value)
+    .split("]")[0]
+    .split(" ")[1]
+    .toLowerCase();
 
 export const isObject = (value) => Boolean(value) && typeof value === "object";
 

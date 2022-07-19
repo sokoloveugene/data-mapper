@@ -1,9 +1,8 @@
-import { isUndefined } from "./utils.js";
+import { isUndefined, typeOf } from "./utils.js";
 
 const types = {
   NUMBER: (data) => typeof data === "number" && !isNaN(data),
   STRING: (data) => typeof data === "string",
-  DATE: (data) => typeof data === "date",
   BOOL: (data) => typeof data === "boolean",
   OBJECT: (data) =>
     Boolean(data) && typeof data === "object" && !Array.isArray(data),
@@ -50,7 +49,7 @@ export const typeCheck = (keys, args, types) => {
     const isValid = check(value);
 
     if (!isValid) {
-      errors.push({ key, error: `Expected ${type}, Received ${value}` });
+      errors.push({ key, error: `Expected ${type}, Received ${typeOf(value)}` });
     }
   }
 
