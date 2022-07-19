@@ -5,6 +5,7 @@ import {
   isUndefined,
   dummy,
   isObject,
+  notEmpty
 } from "./utils.js";
 import { typeCheck } from "./type-check.js";
 import fs from "fs";
@@ -34,7 +35,7 @@ export const convert = (schema, data, errorStorage, prefixes = []) => {
       : set(result, destination, value);
   }
 
-  if (isRoot) {
+  if (isRoot && notEmpty(errorStorage)) {
     fs.writeFileSync(
       "example/error.txt",
       JSON.stringify(errorStorage, null, 2)

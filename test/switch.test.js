@@ -96,7 +96,6 @@ describe("Switch", () => {
     };
 
     const res = convert(schema, src3);
-    console.log(JSON.stringify(res, null, 2));
     expect(res).toEqual(expected);
   });
 });

@@ -6,6 +6,8 @@ const stringToPath = (input) =>
   compact(input.replace(/["|']|\]/g, "").split(/\.|\[/));
 const isNullOrUndefined = (val) => val === null || val === undefined;
 
+export const notEmpty = (obj) => obj && Object.keys(obj).length;
+
 // SERVICE FUNCTIONS ==========================================================
 
 export const isObject = (value) => Boolean(value) && typeof value === "object";
