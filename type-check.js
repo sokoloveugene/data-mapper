@@ -36,21 +36,42 @@ const checks = {
   any: matchType(types.ANY),
 };
 
+const isUnion = (type) =>  type && type.includes("|");
+const fromUnionToTypes = (union) => union.split(/\s*\|\s*/);
+
 export const typeCheck = (keys, args, types) => {
   const errors = [];
+
+  const setError = (key, type, value) =>
+    errors.push({
+      key,
+      error: `Expected ${type}, Received ${typeOf(value)}`,
+    });
+
+  const validate = (value, type) => {
+    const check = checks[type];
+    return !check || check(value);
+  };
 
   for (let i = 0; i < args.length; i++) {
     const [key, value, type] = [keys[i], args[i], types[i]];
 
-    const check = checks[type];
+    if (!type) continue;
 
-    if (!check) continue;
-
-    const isValid = check(value);
-
-    if (!isValid) {
-      errors.push({ key, error: `Expected ${type}, Received ${typeOf(value)}` });
+    if (!isUnion(type)) {
+      const isValid = validate(value, type);
+      if (!isValid) setError(key, type, value);
+      continue;
     }
+
+    let anyValid = false;
+    for (const currentType of fromUnionToTypes(type)) {
+      if (validate(value, currentType)) {
+        anyValid = true;
+        break;
+      }
+    }
+    if (!anyValid) setError(key, type, value);
   }
 
   return errors;
