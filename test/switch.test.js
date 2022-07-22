@@ -1,4 +1,4 @@
-import { pick, convert } from "../mapper";
+import { pick, convert } from "../src/mapper";
 
 const src = {
   employment: {

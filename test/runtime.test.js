@@ -1,5 +1,5 @@
-import { pick, convert } from "../mapper";
-import { toError } from "../utils";
+import { pick, convert } from "../src/mapper";
+import { toError } from "../src/utils";
 
 const src = {
   name: "Bird Ramsey",

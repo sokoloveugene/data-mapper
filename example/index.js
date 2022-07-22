@@ -1,6 +1,5 @@
-import { pick, convert } from "../mapper.js";
+import { pick, convert } from "../src/mapper.js";
 import { upperCase, parseDate, parseEpisode, length } from "./functions.js";
-import { initial } from "./initial.js";
 
 const paginationSchema = {
   nextAvailable: pick("next").pipe(Boolean),

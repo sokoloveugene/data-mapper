@@ -6,10 +6,9 @@ import {
   dummy,
   isObject,
   notEmpty,
-  toError
+  toError,
 } from "./utils.js";
 import { typeCheck } from "./type-check.js";
-import fs from "fs";
 
 export const convert = (schema, data, errorStorage, prefixes = []) => {
   if (!isObject(data)) data = {};
@@ -37,12 +36,7 @@ export const convert = (schema, data, errorStorage, prefixes = []) => {
   }
 
   if (isRoot && notEmpty(errorStorage)) {
-    fs.writeFileSync(
-      "example/error.txt",
-      JSON.stringify(errorStorage, null, 2)
-    );
-
-    throw new Error(toError(errorStorage))
+    throw new Error(toError(errorStorage));
   }
 
   return result;
@@ -67,7 +61,6 @@ class Mapper {
     this.predicate = dummy;
     this.types = [];
     this.mode = MODE.DEFAULT;
-
     this.errorStorage = undefined;
     this.prefixes = [];
   }
