@@ -3,7 +3,7 @@
 ## About
 
 Utility to copy properties from one `Object` to another based
-on schema, which defines which properties should be mapped and how.
+on schema, which defines which properties should be mapped and how with runtime type check.
 
 ## Installation TBD
 
@@ -31,7 +31,7 @@ $ npm install --save
 
 A schema object `key` is the final **destination** `value` is the `command` to pick element, modify and set to the **destination** object as the `value`.
 
-### Static value
+### Base usage
 
 ```javascript
 import { pick } from "../src/mapper.js";
@@ -100,6 +100,63 @@ const result = convert(schema, src);
   gender: "MALE",
   fullName: "Bird Ramsey",
   phone: "+537-21-34-121 or +532-21-34-333",
+}
+*/
+```
+
+### Apply reusable schema
+
+```javascript
+const src = {
+  info: {
+    count: 51,
+    pages: 3,
+    next: "https://rickandmortyapi.com/api/episode?page=2",
+    prev: null,
+  },
+  results: [
+    {
+      _id: 1,
+      name: "Pilot",
+    },
+    {
+      _id: 2,
+      name: "Lawnmower Dog",
+    },
+  ],
+};
+
+const paginationSchema = {
+  nextAvailable: pick("next").pipe(Boolean),
+  prevAvailable: pick("prev").pipe(Boolean),
+  next: pick(),
+  prev: pick(),
+};
+
+const schema = {
+  pagination: pick("info").apply(paginationSchema),
+  results: pick(),
+};
+
+const result = convert(schema, src);
+/*
+{
+  pagination: {
+    nextAvailable: true,
+    prevAvailable: false,
+    next: "https://rickandmortyapi.com/api/episode?page=2",
+    prev: null,
+  },
+  results: [
+    {
+      _id: 1,
+      name: "Pilot",
+    },
+    {
+      _id: 2,
+      name: "Lawnmower Dog",
+    },
+  ],
 }
 */
 ```
