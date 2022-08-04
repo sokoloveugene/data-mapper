@@ -220,21 +220,22 @@ const result = convert(schema, src);
 ```
 
 ### Switch case
+
 ```javascript
 const src = {
   person: {
     age: "child",
-    favoriteCartoon: "Cars"
-  }
-}
+    favoriteCartoon: "Cars",
+  },
+};
 
 const adultSchema = {
-  media: pick("favoriteMovie")
-}
+  media: pick("favoriteMovie"),
+};
 
 const childSchema = {
-  media: pick("favoriteCartoon")
-}
+  media: pick("favoriteCartoon"),
+};
 
 const schema = {
   person: pick().applySwitchEvery(
@@ -253,7 +254,6 @@ const schema = {
 }
 */
 ```
-
 
 ### Switch case for every item in the list
 
@@ -314,4 +314,45 @@ const schema = {
 
 ### Spread object
 
+```javascript
+const src = {
+  contacts: {
+    email: "birdramsey@nimon.com",
+    phone: ["537-21-34-121", "532-21-34-333"],
+  },
+  user: {
+    info: {
+      name: "John",
+      surname: "Dou"
+    }
+  }
+};
 
+const schema = {
+  // When key starts with "..." spread feature is enabled
+  "...": pick("contacts"),
+  // Multiple spread features should have unique index at the end
+  "...2": pick("user.info")
+};
+
+/*
+{
+  email: "birdramsey@nimon.com",
+  phone: ["537-21-34-121", "532-21-34-333"],
+  name: "John",
+  surname: "Dou"
+}
+*/
+```
+
+### Reduce list to map
+
+```javascript
+// TODO
+```
+
+### Runtime type check
+
+```javascript
+// TODO
+```
