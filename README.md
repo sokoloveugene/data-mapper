@@ -25,6 +25,7 @@ $ npm install --save
 - switch case
 - switch case for every item in array
 - spread object
+- reduce list to map
 - runtime type check
 
 ## Usage
@@ -114,16 +115,6 @@ const src = {
     next: "https://rickandmortyapi.com/api/episode?page=2",
     prev: null,
   },
-  results: [
-    {
-      _id: 1,
-      name: "Pilot",
-    },
-    {
-      _id: 2,
-      name: "Lawnmower Dog",
-    },
-  ],
 };
 
 const paginationSchema = {
@@ -134,8 +125,8 @@ const paginationSchema = {
 };
 
 const schema = {
+  // Get object from src.info and map it with paginationSchema
   pagination: pick("info").apply(paginationSchema),
-  results: pick(),
 };
 
 const result = convert(schema, src);
@@ -146,7 +137,15 @@ const result = convert(schema, src);
     prevAvailable: false,
     next: "https://rickandmortyapi.com/api/episode?page=2",
     prev: null,
-  },
+  }
+}
+*/
+```
+
+### Apply reusable schema for every element of array
+
+```javascript
+const src = {
   results: [
     {
       _id: 1,
@@ -157,6 +156,162 @@ const result = convert(schema, src);
       name: "Lawnmower Dog",
     },
   ],
+};
+
+const episodeSchema = {
+  id: pick("_id"),
+  name: pick(),
+};
+
+const schema = {
+  edisodes: pick("results").applyEvery(episodeSchema),
+};
+
+const result = convert(schema, src);
+
+/*
+{
+  edisodes: [
+    { id: 1, name: "Pilot" },
+    { id: 2, name: "Lawnmower Dog" },
+  ],
 }
 */
 ```
+
+### Apply schema for some elements in array
+
+```javascript
+const src = {
+  results: [
+    {
+      _id: 1,
+      name: "Pilot",
+      air_date: "December 2, 2014",
+    },
+    {
+      _id: 2,
+      name: "Lawnmower Dog",
+      air_date: "December 9, 2013",
+    },
+  ],
+};
+
+const episodeSchema = {
+  id: pick("_id"),
+  name: pick(),
+};
+
+const schema = {
+  edisodes: pick("results").applyOnly(
+    episodeSchema,
+    // Element will be mapped when function returns true
+    (episode) => episode.air_date === "December 9, 2013"
+  ),
+};
+
+const result = convert(schema, src);
+
+/*
+{
+  edisodes: [{ id: 2, name: "Lawnmower Dog" }],
+}
+*/
+```
+
+### Switch case
+```javascript
+const src = {
+  person: {
+    age: "child",
+    favoriteCartoon: "Cars"
+  }
+}
+
+const adultSchema = {
+  media: pick("favoriteMovie")
+}
+
+const childSchema = {
+  media: pick("favoriteCartoon")
+}
+
+const schema = {
+  person: pick().applySwitchEvery(
+    {
+      adult: adultSchema,
+      child: childSchema,
+    },
+    // Function returns key to get correct schema
+    (person) => person.age
+  ),
+};
+
+/*
+{
+  media: "Cars"
+}
+*/
+```
+
+
+### Switch case for every item in the list
+
+```javascript
+const src = {
+  jobList: [
+    {
+      start: "October 2, 2019",
+      end: "July 10, 2021",
+      company: "Super Shops",
+    },
+    {
+      start: "September 5, 2020",
+      end: null,
+      company: "Custom Lawn Care",
+    },
+  ],
+};
+
+const previousEmploymentSchema = {
+  isActive: false,
+  company: pick(),
+};
+
+const currentEmploymentSchema = {
+  isActive: true,
+  activeFrom: pick("start"),
+  company: pick(),
+};
+
+const schema = {
+  jobList: pick().applySwitchEvery(
+    {
+      true: previousEmploymentSchema,
+      false: currentEmploymentSchema,
+    },
+    // Function returns key to get correct schema
+    (employment) => Boolean(employment.end)
+  ),
+};
+
+/*
+{
+  jobList: [
+    { 
+      isActive: false,
+      company: "Super Shops",
+    },
+    {
+      isActive: true,
+      activeFrom: "September 5, 2020",
+      company: "Custom Lawn Care",
+    },
+  ],
+}
+*/
+```
+
+### Spread object
+
+

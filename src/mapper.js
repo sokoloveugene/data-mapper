@@ -49,18 +49,21 @@ const MODE = {
   APPLY_SCHEMA_ONLY: "APPLY_SCHEMA_ONLY",
   APPLY_SWITCH: "APPLY_SWITCH",
   APPLY_SWITCH_EVERY: "APPLY_SWITCH_EVERY",
+  REDUCE: "REDUCE",
 };
 
 class Mapper {
   constructor(keys = []) {
+    this.mode = MODE.DEFAULT;
     this.keys = keys;
+    // Service
     this.mappers = [];
     this.default = undefined;
     this.childSchema = undefined;
     this.switchMap = {};
     this.predicate = dummy;
+    // Types
     this.types = [];
-    this.mode = MODE.DEFAULT;
     this.errorStorage = undefined;
     this.prefixes = [];
   }
@@ -110,6 +113,13 @@ class Mapper {
     this.switchMap = switchMap;
     this.predicate = predicate;
     this.mode = MODE.APPLY_SWITCH_EVERY;
+    return this;
+  }
+
+  reduce(predicate = dummy, schema) {
+    this.predicate = predicate;
+    this.childSchema = schema;
+    this.mode = MODE.REDUCE;
     return this;
   }
 
@@ -176,6 +186,20 @@ class Mapper {
             : acc;
         }, []);
         return isUndefined(mapped) || !mapped.length ? this.default : mapped;
+      },
+      [MODE.REDUCE]: (values) => {
+        return values?.reduce(
+          (acc, item, index) => ({
+            ...acc,
+            [this.predicate(item)]: convert(
+              this.childSchema,
+              item,
+              this.errorStorage,
+              [...this.prefixes, this.keys[0], index]
+            ),
+          }),
+          {}
+        );
       },
     }[this.mode];
   }
