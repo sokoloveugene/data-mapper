@@ -88,6 +88,7 @@ const schema = {
 };
 
 const result = convert(schema, src);
+
 /*
 {
   type: "User schema",
@@ -125,11 +126,9 @@ const paginationSchema = {
 };
 
 const schema = {
-  // Get object from src.info and map it with paginationSchema
   pagination: pick("info").apply(paginationSchema),
 };
 
-const result = convert(schema, src);
 /*
 {
   pagination: {
@@ -143,6 +142,10 @@ const result = convert(schema, src);
 ```
 
 ### Apply reusable schema for every element of array
+
+|          | `.applyEvery(schema)`                |
+| -------- | ------------------------------------ |
+| `schema` | Schema to map every element in array |
 
 ```javascript
 const src = {
@@ -167,8 +170,6 @@ const schema = {
   edisodes: pick("results").applyEvery(episodeSchema),
 };
 
-const result = convert(schema, src);
-
 /*
 {
   edisodes: [
@@ -180,6 +181,11 @@ const result = convert(schema, src);
 ```
 
 ### Apply schema for some elements in array
+
+|            | `.applyOnly(schema, function)`                             |
+| ---------- | ---------------------------------------------------------- |
+| `schema`   | Schema to map element                                      |
+| `function` | A function that returns true when element should be mapped |
 
 ```javascript
 const src = {
@@ -205,12 +211,9 @@ const episodeSchema = {
 const schema = {
   edisodes: pick("results").applyOnly(
     episodeSchema,
-    // Element will be mapped when function returns true
     (episode) => episode.air_date === "December 9, 2013"
   ),
 };
-
-const result = convert(schema, src);
 
 /*
 {
@@ -220,6 +223,11 @@ const result = convert(schema, src);
 ```
 
 ### Switch case
+
+|             | `.applySwitch(schemaMap, function)`             |
+| ----------- | ----------------------------------------------- |
+| `schemaMap` | {type: schema} object                           |
+| `function`  | A function that returns type of schema |
 
 ```javascript
 const src = {
@@ -238,12 +246,11 @@ const childSchema = {
 };
 
 const schema = {
-  person: pick().applySwitchEvery(
+  person: pick().applySwitch(
     {
       adult: adultSchema,
       child: childSchema,
     },
-    // Function returns key to get correct schema
     (person) => person.age
   ),
 };
@@ -256,6 +263,11 @@ const schema = {
 ```
 
 ### Switch case for every item in the list
+
+|             | `.applySwitchEvery(schemaMap, function)` |
+| ----------- | ---------------------------------------- |
+| `schemaMap` | {type: schema} object                    |
+| `function`  | A function that returns type of schema   |
 
 ```javascript
 const src = {
@@ -290,7 +302,6 @@ const schema = {
       true: previousEmploymentSchema,
       false: currentEmploymentSchema,
     },
-    // Function returns key to get correct schema
     (employment) => Boolean(employment.end)
   ),
 };
@@ -323,16 +334,16 @@ const src = {
   user: {
     info: {
       name: "John",
-      surname: "Dou"
-    }
-  }
+      surname: "Dou",
+    },
+  },
 };
 
 const schema = {
   // When key starts with "..." spread feature is enabled
   "...": pick("contacts"),
   // Multiple spread features should have unique index at the end
-  "...2": pick("user.info")
+  "...2": pick("user.info"),
 };
 
 /*
@@ -347,8 +358,36 @@ const schema = {
 
 ### Reduce list to map
 
+|            | `.reduce(function, schema)`            |
+| ---------- | -------------------------------------- |
+| `function` | A function to be invoked to create key |
+| `schema`   | A schema to map element                |
+
 ```javascript
-// TODO
+const src = {
+  id: 1,
+  calendar: [
+    { day: 1, task: "Learn Math" },
+    { day: 2, task: "Call mother" },
+    { day: 3, task: "Write article" },
+  ],
+};
+
+const schema = {
+  id: pick(),
+  "...": pick("calendar").reduce((item) => `day-${item.day}`, {
+    todo: pick("task"),
+  }),
+};
+
+/*
+{
+  id: 1,
+  "day-1": { todo: "Learn Math" },
+  "day-2": { todo: "Call mother" },
+  "day-3": { todo: "Write article" },
+}
+*/
 ```
 
 ### Runtime type check
