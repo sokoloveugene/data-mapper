@@ -1,4 +1,5 @@
-import { pick, convert } from "../src/mapper";
+import { pick } from "../src/mapper";
+import { convert } from "../src/convert";
 
 const src = {
   info: {

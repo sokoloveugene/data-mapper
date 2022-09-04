@@ -1,54 +1,13 @@
-import {
-  get,
-  set,
-  isInstanceOf,
-  isUndefined,
-  dummy,
-  isObject,
-  notEmpty,
-  toError,
-} from "./utils.js";
+import { get, dummy } from "./utils.js";
 import { typeCheck } from "./type-check.js";
 import { MODE } from "./mode";
 import { EXECUTORS } from "./executors";
-
-export const convert = (schema, data, errorStorage, prefixes = []) => {
-  if (!isObject(data)) data = {};
-
-  const isRoot = isUndefined(errorStorage)
-    ? ((errorStorage = {}), true)
-    : false;
-
-  const result = {};
-
-  for (const [destination, config] of Object.entries(schema)) {
-    const value = isInstanceOf(config, "Mapper")
-      ? config
-          ._setDestination(destination)
-          ._setPrefixes(prefixes)
-          ._setErrorStorage(errorStorage)
-          ._execute(data)
-      : config;
-
-    if (isUndefined(value)) continue;
-
-    destination.startsWith("...")
-      ? Object.assign(result, value)
-      : set(result, destination, value);
-  }
-
-  if (isRoot && notEmpty(errorStorage)) {
-    throw new Error(toError(errorStorage));
-  }
-
-  return result;
-};
 
 class Scope {
   constructor() {
     this.mode = MODE.DEFAULT;
     this.keys = [];
-    this.mappers = [];
+    this.actions = [];
     this.fallback = undefined;
     this.childSchema = undefined;
     this.switchMap = {};
@@ -57,6 +16,10 @@ class Scope {
     this.types = [];
     this.errorStorage = undefined;
     this.prefixes = [];
+  }
+
+  withActions(initial) {
+    return this.actions.reduce((composed, f) => [f(...composed)], initial)[0];
   }
 }
 
@@ -67,7 +30,7 @@ class Mapper {
   }
 
   pipe(...fns) {
-    this.scope.mappers.push(...fns);
+    this.scope.actions.push(...fns);
     return this;
   }
 
@@ -153,12 +116,10 @@ class Mapper {
     this._validate(initial);
 
     try {
-      const [calculated] = this.scope.mappers.reduce(
-        (composed, f) => [f(...composed)],
-        initial
+      return EXECUTORS[this.scope.mode](
+        this.scope,
+        this.scope.withActions(initial)
       );
-
-      return EXECUTORS[this.scope.mode](this.scope, calculated);
     } catch {}
   }
 }
