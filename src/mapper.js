@@ -9,6 +9,8 @@ import {
   toError,
 } from "./utils.js";
 import { typeCheck } from "./type-check.js";
+import { MODE } from "./mode";
+import { EXECUTORS } from "./executors";
 
 export const convert = (schema, data, errorStorage, prefixes = []) => {
   if (!isObject(data)) data = {};
@@ -42,23 +44,12 @@ export const convert = (schema, data, errorStorage, prefixes = []) => {
   return result;
 };
 
-const MODE = {
-  DEFAULT: "DEFAULT",
-  APPLY_SCHEMA: "APPLY_SCHEMA",
-  APPLY_SCHEMA_EVERY: "APPLY_SCHEMA_EVERY",
-  APPLY_SCHEMA_ONLY: "APPLY_SCHEMA_ONLY",
-  APPLY_SWITCH: "APPLY_SWITCH",
-  APPLY_SWITCH_EVERY: "APPLY_SWITCH_EVERY",
-  REDUCE: "REDUCE",
-};
-
-class Mapper {
-  constructor(keys = []) {
+class Scope {
+  constructor() {
     this.mode = MODE.DEFAULT;
-    this.keys = keys;
-    // Service
+    this.keys = [];
     this.mappers = [];
-    this.default = undefined;
+    this.fallback = undefined;
     this.childSchema = undefined;
     this.switchMap = {};
     this.predicate = dummy;
@@ -67,181 +58,107 @@ class Mapper {
     this.errorStorage = undefined;
     this.prefixes = [];
   }
+}
+
+class Mapper {
+  constructor(keys = []) {
+    this.scope = new Scope();
+    this.scope.keys = keys;
+  }
 
   pipe(...fns) {
-    this.mappers.push(...fns);
+    this.scope.mappers.push(...fns);
     return this;
   }
 
   type(...types) {
-    this.types = types;
+    this.scope.types = types;
     return this;
   }
 
   fallback(value) {
-    this.default = typeof value === "function" ? value() : value;
+    this.scope.fallback = typeof value === "function" ? value() : value;
     return this;
   }
 
   apply(schema) {
-    this.childSchema = schema;
-    this.mode = MODE.APPLY_SCHEMA;
+    this.scope.childSchema = schema;
+    this.scope.mode = MODE.APPLY_SCHEMA;
     return this;
   }
 
   applyEvery(schema) {
-    this.childSchema = schema;
-    this.mode = MODE.APPLY_SCHEMA_EVERY;
+    this.scope.childSchema = schema;
+    this.scope.mode = MODE.APPLY_SCHEMA_EVERY;
     return this;
   }
 
   applyOnly(schema, predicate = dummy) {
-    this.childSchema = schema;
-    this.predicate = predicate;
-    this.mode = MODE.APPLY_SCHEMA_ONLY;
+    this.scope.childSchema = schema;
+    this.scope.predicate = predicate;
+    this.scope.mode = MODE.APPLY_SCHEMA_ONLY;
     return this;
   }
 
   applySwitch(switchMap, predicate = dummy) {
-    this.switchMap = switchMap;
-    this.predicate = predicate;
-    this.mode = MODE.APPLY_SWITCH;
+    this.scope.switchMap = switchMap;
+    this.scope.predicate = predicate;
+    this.scope.mode = MODE.APPLY_SWITCH;
     return this;
   }
 
   applySwitchEvery(switchMap, predicate = dummy) {
-    this.switchMap = switchMap;
-    this.predicate = predicate;
-    this.mode = MODE.APPLY_SWITCH_EVERY;
+    this.scope.switchMap = switchMap;
+    this.scope.predicate = predicate;
+    this.scope.mode = MODE.APPLY_SWITCH_EVERY;
     return this;
   }
 
   reduce(predicate = dummy, schema) {
-    this.predicate = predicate;
-    this.childSchema = schema;
-    this.mode = MODE.REDUCE;
+    this.scope.predicate = predicate;
+    this.scope.childSchema = schema;
+    this.scope.mode = MODE.REDUCE;
     return this;
   }
 
-  get executor() {
-    return {
-      [MODE.DEFAULT]: (value) => (isUndefined(value) ? this.default : value),
-      [MODE.APPLY_SCHEMA]: (value) => {
-        return convert(this.childSchema, value, this.errorStorage, [
-          ...this.prefixes,
-          this.keys[0],
-        ]);
-      },
-      [MODE.APPLY_SCHEMA_EVERY]: (values) => {
-        const mapped = values?.map((value, index) =>
-          convert(this.childSchema, value, this.errorStorage, [
-            ...this.prefixes,
-            this.keys[0],
-            index,
-          ])
-        );
-        return isUndefined(mapped) ? this.default : mapped;
-      },
-      [MODE.APPLY_SCHEMA_ONLY]: (values) => {
-        const mapped = values?.reduce((acc, value, index) => {
-          const isValid = this.predicate(value);
-          return isValid
-            ? [
-                ...acc,
-                convert(this.childSchema, value, this.errorStorage, [
-                  ...this.prefixes,
-                  this.keys[0],
-                  index,
-                ]),
-              ]
-            : acc;
-        }, []);
-        return isUndefined(mapped) || !mapped.length ? this.default : mapped;
-      },
-      [MODE.APPLY_SWITCH]: (value) => {
-        const type = this.predicate(value);
-        const schemaByType = this.switchMap[type];
-        const result = schemaByType
-          ? convert(schemaByType, value, this.errorStorage, [
-              ...this.prefixes,
-              this.keys[0],
-            ])
-          : undefined;
-        return isUndefined(result) ? this.default : result;
-      },
-      [MODE.APPLY_SWITCH_EVERY]: (values) => {
-        const mapped = values?.reduce((acc, value, index) => {
-          const type = this.predicate(value);
-          const schemaByType = this.switchMap[type];
-          const isValid = !!schemaByType;
-          return isValid
-            ? [
-                ...acc,
-                convert(schemaByType, value, this.errorStorage, [
-                  ...this.prefixes,
-                  this.keys[0],
-                  index,
-                ]),
-              ]
-            : acc;
-        }, []);
-        return isUndefined(mapped) || !mapped.length ? this.default : mapped;
-      },
-      [MODE.REDUCE]: (values) => {
-        return values?.reduce(
-          (acc, item, index) => ({
-            ...acc,
-            [this.predicate(item)]: convert(
-              this.childSchema,
-              item,
-              this.errorStorage,
-              [...this.prefixes, this.keys[0], index]
-            ),
-          }),
-          {}
-        );
-      },
-    }[this.mode];
-  }
-
   _setDestination(path) {
-    if (!this.keys.length) {
-      this.keys = [path];
+    if (!this.scope.keys.length) {
+      this.scope.keys = [path];
     }
     return this;
   }
 
   _setPrefixes(prefixes) {
-    this.prefixes = prefixes;
+    this.scope.prefixes = prefixes;
     return this;
   }
 
   _setErrorStorage(errorStorage) {
-    this.errorStorage = errorStorage;
+    this.scope.errorStorage = errorStorage;
     return this;
   }
 
   _validate(args) {
-    const errors = typeCheck(this.keys, args, this.types);
+    const errors = typeCheck(this.scope.keys, args, this.scope.types);
 
     for (const { key, error } of errors) {
-      const errorPath = [...this.prefixes, key].join(".");
-      this.errorStorage[errorPath] = error;
+      const errorPath = [...this.scope.prefixes, key].join(".");
+      this.scope.errorStorage[errorPath] = error;
     }
   }
 
   _execute(data) {
-    const initial = this.keys.map((key) => get(data, key));
+    const initial = this.scope.keys.map((key) => get(data, key));
 
     this._validate(initial);
 
     try {
-      const [calculated] = this.mappers.reduce(
+      const [calculated] = this.scope.mappers.reduce(
         (composed, f) => [f(...composed)],
         initial
       );
 
-      return this.executor(calculated);
+      return EXECUTORS[this.scope.mode](this.scope, calculated);
     } catch {}
   }
 }
