@@ -1,7 +1,5 @@
-import { get, dummy } from "./utils.js";
-import { typeCheck } from "./type-check.js";
-import { MODE } from "./mode";
-import { EXECUTORS } from "./executors";
+import { MODE, get, dummy } from "./utils.js";
+import { EXECUTORS } from "./executors/index.js";
 
 class Scope {
   constructor() {
@@ -12,10 +10,6 @@ class Scope {
     this.childSchema = undefined;
     this.switchMap = {};
     this.predicate = dummy;
-    // Types
-    this.types = [];
-    this.errorStorage = undefined;
-    this.prefixes = [];
   }
 
   withActions(initial) {
@@ -23,7 +17,7 @@ class Scope {
   }
 }
 
-class Mapper {
+export class Mapper {
   constructor(keys = []) {
     this.scope = new Scope();
     this.scope.keys = keys;
@@ -46,27 +40,27 @@ class Mapper {
 
   apply(schema) {
     this.scope.childSchema = schema;
-    this.scope.mode = MODE.APPLY_SCHEMA;
+    this.scope.mode = MODE.APPLY;
     return this;
   }
 
-  applyEvery(schema) {
+  each(schema) {
     this.scope.childSchema = schema;
-    this.scope.mode = MODE.APPLY_SCHEMA_EVERY;
+    this.scope.mode = MODE.MAP;
     return this;
   }
 
-  applyOnly(schema, predicate = dummy) {
+  when(schema, predicate = dummy) {
     this.scope.childSchema = schema;
     this.scope.predicate = predicate;
-    this.scope.mode = MODE.APPLY_SCHEMA_ONLY;
+    this.scope.mode = MODE.WHEN;
     return this;
   }
 
-  applySwitch(switchMap, predicate = dummy) {
+  switch(switchMap, predicate = dummy) {
     this.scope.switchMap = switchMap;
     this.scope.predicate = predicate;
-    this.scope.mode = MODE.APPLY_SWITCH;
+    this.scope.mode = MODE.SWITCH;
     return this;
   }
 
@@ -91,29 +85,8 @@ class Mapper {
     return this;
   }
 
-  _setPrefixes(prefixes) {
-    this.scope.prefixes = prefixes;
-    return this;
-  }
-
-  _setErrorStorage(errorStorage) {
-    this.scope.errorStorage = errorStorage;
-    return this;
-  }
-
-  _validate(args) {
-    const errors = typeCheck(this.scope.keys, args, this.scope.types);
-
-    for (const { key, error } of errors) {
-      const errorPath = [...this.scope.prefixes, key].join(".");
-      this.scope.errorStorage[errorPath] = error;
-    }
-  }
-
   _execute(data) {
     const initial = this.scope.keys.map((key) => get(data, key));
-
-    this._validate(initial);
 
     try {
       return EXECUTORS[this.scope.mode](
@@ -123,5 +96,3 @@ class Mapper {
     } catch {}
   }
 }
-
-export const pick = (...keys) => new Mapper(keys);

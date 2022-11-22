@@ -8,17 +8,6 @@ const isNullOrUndefined = (val) => val === null || val === undefined;
 
 // SERVICE FUNCTIONS ==========================================================
 
-export const toError = (obj) => JSON.stringify(obj, null, 2)
-
-export const notEmpty = (obj) => obj && Object.keys(obj).length;
-
-export const typeOf = (value) =>
-  Object.prototype.toString
-    .call(value)
-    .split("]")[0]
-    .split(" ")[1]
-    .toLowerCase();
-
 export const isObject = (value) => Boolean(value) && typeof value === "object";
 
 export const isUndefined = (val) => val === undefined;
@@ -70,4 +59,16 @@ export const get = (obj, path, defaultValue) => {
       ? defaultValue
       : obj[path]
     : result;
+};
+
+// CONSTANTS ==================================================================
+
+export const MODE = {
+  DEFAULT: "DEFAULT",
+  APPLY: "APPLY",
+  MAP: "MAP",
+  WHEN: "WHEN",
+  SWITCH: "SWITCH",
+  APPLY_SWITCH_EVERY: "APPLY_SWITCH_EVERY",
+  REDUCE: "REDUCE",
 };

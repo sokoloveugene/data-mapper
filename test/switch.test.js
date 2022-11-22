@@ -1,5 +1,4 @@
-import { pick } from "../src/mapper";
-import { convert } from "../src/convert";
+import { convert, pick } from "../src";
 
 const src = {
   employment: {
@@ -39,7 +38,7 @@ describe("Switch", () => {
 
   test("for one item", () => {
     const schema = {
-      job: pick("employment").applySwitch(
+      job: pick("employment").switch(
         {
           true: previousEmploymentSchema,
           false: currentEmploymentSchema,

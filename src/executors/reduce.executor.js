@@ -1,15 +1,10 @@
-import { convert } from "../convert";
+import { convert } from "../index.js";
 
 export const reduceExecutor = (scope, values) => {
   return values?.reduce(
-    (acc, item, index) => ({
+    (acc, item) => ({
       ...acc,
-      [scope.predicate(item)]: convert(
-        scope.childSchema,
-        item,
-        scope.errorStorage,
-        [...scope.prefixes, scope.keys[0], index]
-      ),
+      [scope.predicate(item)]: convert(scope.childSchema, item),
     }),
     {}
   );

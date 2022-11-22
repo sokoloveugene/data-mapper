@@ -1,14 +1,14 @@
-import { pick, convert } from "../src/mapper.js";
+import { pick, convert } from "../src/index.js";
 import { data } from "./data.js";
 
 const teamSchema = {
   teamId: pick("id"),
   type: pick(),
-  laps: pick().applyEvery({
+  laps: pick().each({
     lapId: pick("id"),
     status: pick(),
     dayNum: pick(),
-    users: pick().applyEvery({
+    users: pick().each({
       userId: pick("id"),
       avatar: pick(),
       isCaptain: pick(),

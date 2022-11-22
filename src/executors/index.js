@@ -1,19 +1,18 @@
-import { MODE } from "../mode";
-
-import { defaultExecutor } from "./default.executor";
-import { applySchemaExecutor } from "./apply-schema.executor";
-import { applySchemaEveryExecutor } from "./apply-schema-every.executor";
-import { applySchemaOnlyExecutor } from "./apply-schema-only.executor";
-import { applySwitchExecutor } from "./apply-switch.executor";
-import { applySwitchEveryExecutor } from "./apply-switch-every.executor";
-import { reduceExecutor } from "./reduce.executor";
+import { MODE } from "../utils.js";
+import { defaultExecutor } from "./default.executor.js";
+import { applyExecutor } from "./apply.executor.js";
+import { mapExecutor } from "./map.executor.js";
+import { whenExecutor } from "./when.executor.js";
+import { switchExecutor } from "./switch.executor.js";
+import { switchAllExecutor } from "./switch-all.executor.js";
+import { reduceExecutor } from "./reduce.executor.js";
 
 export const EXECUTORS = {
   [MODE.DEFAULT]: defaultExecutor,
-  [MODE.APPLY_SCHEMA]: applySchemaExecutor,
-  [MODE.APPLY_SCHEMA_EVERY]: applySchemaEveryExecutor,
-  [MODE.APPLY_SCHEMA_ONLY]: applySchemaOnlyExecutor,
-  [MODE.APPLY_SWITCH]: applySwitchExecutor,
-  [MODE.APPLY_SWITCH_EVERY]: applySwitchEveryExecutor,
+  [MODE.APPLY]: applyExecutor,
+  [MODE.MAP]: mapExecutor,
+  [MODE.WHEN]: whenExecutor,
+  [MODE.SWITCH]: switchExecutor,
+  [MODE.APPLY_SWITCH_EVERY]: switchAllExecutor,
   [MODE.REDUCE]: reduceExecutor,
 };

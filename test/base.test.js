@@ -1,5 +1,4 @@
-import { pick } from "../src/mapper";
-import { convert } from "../src/convert";
+import { convert, pick } from "../src";
 
 const src = {
   name: "Bird Ramsey",

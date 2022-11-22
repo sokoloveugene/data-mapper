@@ -1,5 +1,4 @@
-import { pick } from "../src/mapper";
-import { convert } from "../src/convert";
+import { convert, pick } from "../src";
 
 const src = {
   info: {
@@ -60,7 +59,7 @@ describe("Apply", () => {
     };
 
     const schema = {
-      edisodes: pick("results").applyEvery(episodeSchema),
+      edisodes: pick("results").each(episodeSchema),
     };
 
     const expected = {
@@ -80,7 +79,7 @@ describe("Apply", () => {
     };
 
     const schema = {
-      edisodes: pick("results").applyOnly(
+      edisodes: pick("results").when(
         episodeSchema,
         (episode) => episode.air_date === "December 9, 2013"
       ),

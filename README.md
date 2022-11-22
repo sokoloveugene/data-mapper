@@ -143,7 +143,7 @@ const schema = {
 
 ### Apply reusable schema for every element of array
 
-|          | `.applyEvery(schema)`                |
+|          | `.each(schema)`                |
 | -------- | ------------------------------------ |
 | `schema` | Schema to map every element in array |
 
@@ -167,7 +167,7 @@ const episodeSchema = {
 };
 
 const schema = {
-  edisodes: pick("results").applyEvery(episodeSchema),
+  edisodes: pick("results").each(episodeSchema),
 };
 
 /*
@@ -182,7 +182,7 @@ const schema = {
 
 ### Apply schema for some elements in array
 
-|            | `.applyOnly(schema, function)`                             |
+|            | `.when(schema, function)`                             |
 | ---------- | ---------------------------------------------------------- |
 | `schema`   | Schema to map element                                      |
 | `function` | A function that returns true when element should be mapped |
@@ -209,7 +209,7 @@ const episodeSchema = {
 };
 
 const schema = {
-  edisodes: pick("results").applyOnly(
+  edisodes: pick("results").when(
     episodeSchema,
     (episode) => episode.air_date === "December 9, 2013"
   ),
@@ -224,7 +224,7 @@ const schema = {
 
 ### Switch case
 
-|             | `.applySwitch(schemaMap, function)`             |
+|             | `.switch(schemaMap, function)`             |
 | ----------- | ----------------------------------------------- |
 | `schemaMap` | {type: schema} object                           |
 | `function`  | A function that returns type of schema |
@@ -246,7 +246,7 @@ const childSchema = {
 };
 
 const schema = {
-  person: pick().applySwitch(
+  person: pick().switch(
     {
       adult: adultSchema,
       child: childSchema,
