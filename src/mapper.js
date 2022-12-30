@@ -28,11 +28,6 @@ export class Mapper {
     return this;
   }
 
-  type(...types) {
-    this.scope.types = types;
-    return this;
-  }
-
   fallback(value) {
     this.scope.fallback = typeof value === "function" ? value() : value;
     return this;
@@ -44,7 +39,7 @@ export class Mapper {
     return this;
   }
 
-  each(schema) {
+  map(schema) {
     this.scope.childSchema = schema;
     this.scope.mode = MODE.MAP;
     return this;
@@ -64,10 +59,10 @@ export class Mapper {
     return this;
   }
 
-  applySwitchEvery(switchMap, predicate = dummy) {
+  switchMap(switchMap, predicate = dummy) {
     this.scope.switchMap = switchMap;
     this.scope.predicate = predicate;
-    this.scope.mode = MODE.APPLY_SWITCH_EVERY;
+    this.scope.mode = MODE.SWITCH_MAP;
     return this;
   }
 

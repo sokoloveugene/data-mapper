@@ -1,7 +1,7 @@
 import { isUndefined } from "../utils.js";
 import { convert } from "../index.js";
 
-export const switchAllExecutor = (scope, values) => {
+export const switchMapExecutor = (scope, values) => {
   const mapped = values?.reduce((acc, value) => {
     const type = scope.predicate(value);
     const schemaByType = scope.switchMap[type];

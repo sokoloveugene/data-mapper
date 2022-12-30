@@ -4,7 +4,7 @@ import { applyExecutor } from "./apply.executor.js";
 import { mapExecutor } from "./map.executor.js";
 import { whenExecutor } from "./when.executor.js";
 import { switchExecutor } from "./switch.executor.js";
-import { switchAllExecutor } from "./switch-all.executor.js";
+import { switchMapExecutor } from "./switch-map.executor.js";
 import { reduceExecutor } from "./reduce.executor.js";
 
 export const EXECUTORS = {
@@ -13,6 +13,6 @@ export const EXECUTORS = {
   [MODE.MAP]: mapExecutor,
   [MODE.WHEN]: whenExecutor,
   [MODE.SWITCH]: switchExecutor,
-  [MODE.APPLY_SWITCH_EVERY]: switchAllExecutor,
+  [MODE.SWITCH_MAP]: switchMapExecutor,
   [MODE.REDUCE]: reduceExecutor,
 };

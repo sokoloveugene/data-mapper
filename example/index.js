@@ -4,11 +4,11 @@ import { data } from "./data.js";
 const teamSchema = {
   teamId: pick("id"),
   type: pick(),
-  laps: pick().each({
+  laps: pick().map({
     lapId: pick("id"),
     status: pick(),
     dayNum: pick(),
-    users: pick().each({
+    users: pick().map({
       userId: pick("id"),
       avatar: pick(),
       isCaptain: pick(),

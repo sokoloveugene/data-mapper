@@ -59,7 +59,7 @@ describe("Apply", () => {
     };
 
     const schema = {
-      edisodes: pick("results").each(episodeSchema),
+      edisodes: pick("results").map(episodeSchema),
     };
 
     const expected = {

@@ -26,7 +26,6 @@ $ npm install --save
 - switch case for every item in array
 - spread object
 - reduce list to map
-- runtime type check
 
 ## Usage
 
@@ -108,6 +107,10 @@ const result = convert(schema, src);
 
 ### Apply reusable schema
 
+|          | `.apply(schema)`      |
+| -------- | --------------------- |
+| `schema` | Schema to map element |
+
 ```javascript
 const src = {
   info: {
@@ -143,7 +146,7 @@ const schema = {
 
 ### Apply reusable schema for every element of array
 
-|          | `.each(schema)`                |
+|          | `.map(schema)`                       |
 | -------- | ------------------------------------ |
 | `schema` | Schema to map every element in array |
 
@@ -167,7 +170,7 @@ const episodeSchema = {
 };
 
 const schema = {
-  edisodes: pick("results").each(episodeSchema),
+  edisodes: pick("results").map(episodeSchema),
 };
 
 /*
@@ -182,7 +185,7 @@ const schema = {
 
 ### Apply schema for some elements in array
 
-|            | `.when(schema, function)`                             |
+|            | `.when(schema, function)`                                  |
 | ---------- | ---------------------------------------------------------- |
 | `schema`   | Schema to map element                                      |
 | `function` | A function that returns true when element should be mapped |
@@ -224,9 +227,9 @@ const schema = {
 
 ### Switch case
 
-|             | `.switch(schemaMap, function)`             |
-| ----------- | ----------------------------------------------- |
-| `schemaMap` | {type: schema} object                           |
+|             | `.switch(schemaMap, function)`         |
+| ----------- | -------------------------------------- |
+| `schemaMap` | {type: schema} object                  |
 | `function`  | A function that returns type of schema |
 
 ```javascript
@@ -264,10 +267,10 @@ const schema = {
 
 ### Switch case for every item in the list
 
-|             | `.applySwitchEvery(schemaMap, function)` |
-| ----------- | ---------------------------------------- |
-| `schemaMap` | {type: schema} object                    |
-| `function`  | A function that returns type of schema   |
+|             | `.switchMap(schemaMap, function)`      |
+| ----------- | -------------------------------------- |
+| `schemaMap` | {type: schema} object                  |
+| `function`  | A function that returns type of schema |
 
 ```javascript
 const src = {
@@ -297,7 +300,7 @@ const currentEmploymentSchema = {
 };
 
 const schema = {
-  jobList: pick().applySwitchEvery(
+  jobList: pick().switchMap(
     {
       true: previousEmploymentSchema,
       false: currentEmploymentSchema,
@@ -388,10 +391,4 @@ const schema = {
   "day-3": { todo: "Write article" },
 }
 */
-```
-
-### Runtime type check
-
-```javascript
-// TODO
 ```

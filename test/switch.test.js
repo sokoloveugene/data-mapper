@@ -70,7 +70,7 @@ describe("Switch", () => {
 
   test("for every item in the list", () => {
     const schema = {
-      list: pick().applySwitchEvery(
+      list: pick().switchMap(
         {
           true: previousEmploymentSchema,
           false: currentEmploymentSchema,

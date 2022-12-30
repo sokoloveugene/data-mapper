@@ -1,12 +1,8 @@
-// SERVICE FUNCTIONS ==========================================================
-
 const compact = (value) => (Array.isArray(value) ? value.filter(Boolean) : []);
 const isKey = (value) => /^\w*$/.test(value);
 const stringToPath = (input) =>
   compact(input.replace(/["|']|\]/g, "").split(/\.|\[/));
 const isNullOrUndefined = (val) => val === null || val === undefined;
-
-// SERVICE FUNCTIONS ==========================================================
 
 export const isObject = (value) => Boolean(value) && typeof value === "object";
 
@@ -61,14 +57,12 @@ export const get = (obj, path, defaultValue) => {
     : result;
 };
 
-// CONSTANTS ==================================================================
-
 export const MODE = {
   DEFAULT: "DEFAULT",
   APPLY: "APPLY",
   MAP: "MAP",
   WHEN: "WHEN",
   SWITCH: "SWITCH",
-  APPLY_SWITCH_EVERY: "APPLY_SWITCH_EVERY",
+  SWITCH_MAP: "SWITCH_MAP",
   REDUCE: "REDUCE",
 };
