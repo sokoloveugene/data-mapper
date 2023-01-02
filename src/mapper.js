@@ -67,12 +67,9 @@ export class Mapper {
 
   _execute(data) {
     const initial = this.scope.keys.map((key) => get(data, key));
-
-    try {
-      return EXECUTORS[this.scope.mode](
-        this.scope,
-        this.scope.withActions(initial)
-      );
-    } catch {}
+    return EXECUTORS[this.scope.mode](
+      this.scope,
+      this.scope.withActions(initial)
+    );
   }
 }

@@ -1,4 +1,4 @@
-import { dummy, MODE } from "./utils";
+import { dummy, MODE } from "./utils.js";
 
 export class Scope {
   constructor() {

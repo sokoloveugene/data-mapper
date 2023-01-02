@@ -13,7 +13,7 @@ const teamSchema = {
       avatar: pick(),
       isCaptain: pick(),
       "...": pick("days").reduce((day) => `day-${day.dayNum}`, {
-        weight: pick().type("number"),
+        weight: pick(),
         weightUnit: pick(),
         delta: pick(),
       }),
