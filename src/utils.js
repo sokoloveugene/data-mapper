@@ -61,7 +61,7 @@ export const MODE = {
   DEFAULT: "DEFAULT",
   APPLY: "APPLY",
   MAP: "MAP",
-  WHEN: "WHEN",
+  MAP_WHEN: "MAP_WHEN",
   SWITCH: "SWITCH",
   SWITCH_MAP: "SWITCH_MAP",
   REDUCE: "REDUCE",

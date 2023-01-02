@@ -79,7 +79,7 @@ describe("Apply", () => {
     };
 
     const schema = {
-      edisodes: pick("results").when(
+      edisodes: pick("results").mapWhen(
         episodeSchema,
         (episode) => episode.air_date === "December 9, 2013"
       ),

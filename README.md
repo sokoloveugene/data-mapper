@@ -185,7 +185,7 @@ const schema = {
 
 ### Apply schema for some elements in array
 
-|            | `.when(schema, function)`                                  |
+|            | `.mapWhen(schema, function)`                                  |
 | ---------- | ---------------------------------------------------------- |
 | `schema`   | Schema to map element                                      |
 | `function` | A function that returns true when element should be mapped |
@@ -212,7 +212,7 @@ const episodeSchema = {
 };
 
 const schema = {
-  edisodes: pick("results").when(
+  edisodes: pick("results").mapWhen(
     episodeSchema,
     (episode) => episode.air_date === "December 9, 2013"
   ),

@@ -1,21 +1,6 @@
 import { MODE, get, dummy } from "./utils.js";
 import { EXECUTORS } from "./executors/index.js";
-
-class Scope {
-  constructor() {
-    this.mode = MODE.DEFAULT;
-    this.keys = [];
-    this.actions = [];
-    this.fallback = undefined;
-    this.childSchema = undefined;
-    this.switchMap = {};
-    this.predicate = dummy;
-  }
-
-  withActions(initial) {
-    return this.actions.reduce((composed, f) => [f(...composed)], initial)[0];
-  }
-}
+import { Scope } from "./scope.js";
 
 export class Mapper {
   constructor(keys = []) {
@@ -45,10 +30,10 @@ export class Mapper {
     return this;
   }
 
-  when(schema, predicate = dummy) {
+  mapWhen(schema, predicate = dummy) {
     this.scope.childSchema = schema;
     this.scope.predicate = predicate;
-    this.scope.mode = MODE.WHEN;
+    this.scope.mode = MODE.MAP_WHEN;
     return this;
   }
 
