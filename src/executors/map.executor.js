@@ -5,5 +5,5 @@ export const mapExecutor = (scope, values) => {
   const mapped = values?.map((value) =>
     convert(scope.childSchema, value)
   );
-  return isUndefined(mapped) ? scope.fallback : mapped;
+  return isUndefined(mapped) ? scope.fallback() : mapped;
 };

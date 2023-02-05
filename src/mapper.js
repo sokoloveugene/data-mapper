@@ -1,5 +1,5 @@
 import { MODE, get, dummy } from "./utils.js";
-import { EXECUTORS } from "./executors/index.js";
+import { EXECUTORS } from "./executors";
 import { Scope } from "./scope.js";
 
 export class Mapper {
@@ -14,7 +14,7 @@ export class Mapper {
   }
 
   fallback(value) {
-    this.scope.fallback = typeof value === "function" ? value() : value;
+    this.scope.fallback = typeof value === "function" ? value : () => value;
     return this;
   }
 

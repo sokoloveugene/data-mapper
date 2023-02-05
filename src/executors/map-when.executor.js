@@ -6,5 +6,5 @@ export const mapWhenExecutor = (scope, values) => {
     const isValid = scope.predicate(value);
     return isValid ? [...acc, convert(scope.childSchema, value)] : acc;
   }, []);
-  return isUndefined(mapped) || !mapped.length ? scope.fallback : mapped;
+  return isUndefined(mapped) || !mapped.length ? scope.fallback() : mapped;
 };

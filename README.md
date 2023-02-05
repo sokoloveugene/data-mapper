@@ -34,7 +34,7 @@ A schema object `key` is the final **destination** `value` is the `command` to p
 ### Base usage
 
 ```javascript
-import { pick } from "../src/mapper.js";
+import { pick } from "../src/mapper";
 import { v4 as uuidv4 } from "uuid";
 
 const src = {

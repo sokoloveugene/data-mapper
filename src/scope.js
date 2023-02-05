@@ -5,7 +5,7 @@ export class Scope {
     this.mode = MODE.DEFAULT;
     this.keys = [];
     this.actions = [];
-    this.fallback = undefined;
+    this.fallback = dummy;
     this.childSchema = undefined;
     this.switchMap = {};
     this.predicate = dummy;

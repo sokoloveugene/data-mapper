@@ -8,5 +8,5 @@ export const switchMapExecutor = (scope, values) => {
     const isValid = !!schemaByType;
     return isValid ? [...acc, convert(schemaByType, value)] : acc;
   }, []);
-  return isUndefined(mapped) || !mapped.length ? scope.fallback : mapped;
+  return isUndefined(mapped) || !mapped.length ? scope.fallback() : mapped;
 };
