@@ -8,7 +8,8 @@ export declare interface Scope {
   predicate: Function;
 }
 
-export declare interface Mapper {
+export declare interface FieldMapper {
+  type(constructor): this;
   pipe(...fns: Function[]): this;
   fallback<T>(value: T): this;
   apply(schema: MappingSchema): this;
@@ -21,7 +22,7 @@ export declare interface Mapper {
   _execute(data: unknown): Record<string, any>;
 }
 
-export declare type MappingSchema = Record<string, Mapper>;
+export declare type MappingSchema = Record<string, FieldMapper>;
 
 export declare const convert = (schema: MappingSchema, data: unknown) =>
   Record<string, unknown>;

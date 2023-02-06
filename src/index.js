@@ -1,5 +1,5 @@
 import { set, isInstanceOf, isUndefined, isObject } from "./utils.js";
-import { Mapper } from "./mapper.js";
+import { FieldMapper } from "./mapper.js";
 
 export const convert = (schema, data) => {
   if (!isObject(data)) data = {};
@@ -7,7 +7,7 @@ export const convert = (schema, data) => {
   const result = {};
 
   for (const [destination, config] of Object.entries(schema)) {
-    const value = isInstanceOf(config, "Mapper")
+    const value = isInstanceOf(config, "FieldMapper")
       ? config._setDestination(destination)._execute(data)
       : config;
 
@@ -21,4 +21,4 @@ export const convert = (schema, data) => {
   return result;
 };
 
-export const pick = (...keys) => new Mapper(keys);
+export const pick = (...keys) => new FieldMapper(keys);

@@ -1,11 +1,16 @@
-import { MODE, get, dummy } from "./utils.js";
+import { MODE, get, dummy, isUndefined, isNullOrUndefined } from "./utils.js";
 import { EXECUTORS } from "./executors";
 import { Scope } from "./scope.js";
 
-export class Mapper {
+export class FieldMapper {
   constructor(keys = []) {
     this.scope = new Scope();
     this.scope.keys = keys;
+  }
+
+  type(constructor) {
+    this.scope.type = constructor;
+    return this;
   }
 
   pipe(...fns) {
@@ -67,9 +72,16 @@ export class Mapper {
 
   _execute(data) {
     const initial = this.scope.keys.map((key) => get(data, key));
-    return EXECUTORS[this.scope.mode](
+    const value = EXECUTORS[this.scope.mode](
       this.scope,
       this.scope.withActions(initial)
     );
+
+    const withType =
+      isUndefined(this.scope.type) || isNullOrUndefined(value)
+        ? value
+        : this.scope.type(value);
+
+    return Number.isNaN(withType) ? undefined : withType;
   }
 }

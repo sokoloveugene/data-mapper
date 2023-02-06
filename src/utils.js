@@ -2,7 +2,7 @@ const compact = (value) => (Array.isArray(value) ? value.filter(Boolean) : []);
 const isKey = (value) => /^\w*$/.test(value);
 const stringToPath = (input) =>
   compact(input.replace(/["|']|\]/g, "").split(/\.|\[/));
-const isNullOrUndefined = (val) => val === null || val === undefined;
+export const isNullOrUndefined = (val) => val === null || val === undefined;
 
 export const isObject = (value) => Boolean(value) && typeof value === "object";
 
