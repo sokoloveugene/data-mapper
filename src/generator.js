@@ -1,16 +1,26 @@
-import { isUndefined, MODE } from "./utils";
+import { isUndefined, MODE, set } from "./utils";
 
-/**
- * TODO cover spread feature
- */
+const EXTENDS = "__EXTENDS__";
 
-export const typeFromSchema = (schema) =>
-  Object.keys(schema).reduce(
-    (acc, key) => ({ ...acc, [key]: schema[key]?.scope?.getTypeDefinition() }),
-    {}
-  );
+const extendsRecord = {
+  [EXTENDS]: { type: "extends", optional: false, child: null },
+};
 
-export function getRootTypeDefinition(scope) {
+const typeFromSchema = (schema) => {
+  const types = {};
+
+  for (const key of Object.keys(schema)) {
+    if (key.startsWith("...")) {
+      Object.assign(types, extendsRecord);
+    } else {
+      set(types, key, schema[key]?.scope?.getTypeDefinition());
+    }
+  }
+
+  return types;
+};
+
+export function _getRootTypeDefinition(scope) {
   const { type, mode } = scope;
   if (type === String) {
     return "string";
@@ -39,7 +49,7 @@ export function getRootTypeDefinition(scope) {
   return "unknown";
 }
 
-export function getChildTypeDefinition(scope) {
+export function _getChildTypeDefinition(scope) {
   const { mode, switchMap, childSchema } = scope;
   if (MODE.DEFAULT === mode) {
     return null;
@@ -51,14 +61,9 @@ export function getChildTypeDefinition(scope) {
     );
   }
 
-  return Object.keys(childSchema).reduce(
-    (acc, key) => ({
-      ...acc,
-      [key]: childSchema[key].scope.getTypeDefinition(),
-    }),
-    {}
-  );
+  return typeFromSchema(childSchema);
 }
+
 export function getInterface(obj) {
   const parsedTypes = typeFromSchema(obj);
   return ["interface Schema", parseProperties(parsedTypes)].join("\n");
@@ -70,7 +75,7 @@ function parseProperties(obj) {
   for (const rawKey of Object.keys(obj)) {
     const { type, optional, child } = obj[rawKey] ?? {};
     const key = `"${rawKey}"`;
-    const separator = optional ? "?:" : ":";
+    const separator = optional || !type ? "?:" : ":";
     const union = Array.isArray(child)
       ? child.map((i) => parseProperties(i)).join("|")
       : "";
@@ -80,9 +85,20 @@ function parseProperties(obj) {
 
     let value = type;
 
+    if (rawKey === EXTENDS) {
+      // spread feature
+      lines.push(`[property: string]: any`);
+      continue;
+    }
+
     if (isUndefined(obj[rawKey])) {
       // static prop case
       value = "any";
+    }
+
+    if (obj[rawKey] && !type) {
+      // nested
+      value = parseProperties(obj[rawKey]);
     }
 
     if (type === "object") {

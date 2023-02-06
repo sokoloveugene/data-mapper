@@ -32,8 +32,8 @@ describe("Apply", () => {
     const paginationSchema = {
       nextAvailable: pick("next").pipe(Boolean),
       prevAvailable: pick("prev").pipe(Boolean),
-      next: pick(),
-      prev: pick(),
+      "deep.next": pick("next"),
+      "deep.prev": pick("prev"),
     };
 
     const schema = {
@@ -44,8 +44,10 @@ describe("Apply", () => {
       pagination: {
         nextAvailable: true,
         prevAvailable: false,
-        next: "https://rickandmortyapi.com/api/episode?page=2",
-        prev: null,
+        deep: {
+          next: "https://rickandmortyapi.com/api/episode?page=2",
+          prev: null,
+        },
       },
     };
 

@@ -1,5 +1,6 @@
 import { set, isInstanceOf, isUndefined, isObject } from "./utils.js";
 import { FieldMapper } from "./mapper.js";
+import { getInterface as _getInterface } from "./generator.js";
 
 export const convert = (schema, data) => {
   if (!isObject(data)) data = {};
@@ -22,3 +23,5 @@ export const convert = (schema, data) => {
 };
 
 export const pick = (...keys) => new FieldMapper(keys);
+
+export const getInterface = _getInterface;

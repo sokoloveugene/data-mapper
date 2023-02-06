@@ -26,6 +26,8 @@ $ npm install --save
 - switch case for every item in array
 - spread object
 - reduce list to map
+- runtime type transformation
+- generate ts interface from mapping schema (getInterface function)
 
 ## Usage
 
@@ -56,11 +58,11 @@ const schema = {
   // Define static value
   type: "User schema",
 
-  // Bypass property as is
-  age: pick(),
+  // Bypass property and ensure that value is number (runtime)
+  age: pick().type(Number),
 
   // Save with new key deep nested property
-  userEmail: pick("contacts.email"),
+  userEmail: pick("contacts.email").type(String),
 
   // Set deep property
   "details.company": pick("company"),
@@ -185,7 +187,7 @@ const schema = {
 
 ### Apply schema for some elements in array
 
-|            | `.mapWhen(schema, function)`                                  |
+|            | `.mapWhen(schema, function)`                               |
 | ---------- | ---------------------------------------------------------- |
 | `schema`   | Schema to map element                                      |
 | `function` | A function that returns true when element should be mapped |
@@ -389,6 +391,167 @@ const schema = {
   "day-1": { todo: "Learn Math" },
   "day-2": { todo: "Call mother" },
   "day-3": { todo: "Write article" },
+}
+*/
+```
+
+### Runtime type transformation
+
+|               | `.type(Constructor)`           |
+| ------------- | ------------------------------ |
+| `Constructor` | can be String, Number, Boolean |
+
+```javascript
+const src = {
+  name: "Bird Ramsey",
+  gender: 1,
+  age: "23",
+  contacts: {
+    email: null,
+    phone: ["537-21-34-121", "532-21-34-333"],
+  },
+  balance: "$3,946.45",
+  online: 0,
+};
+
+const schema = {
+  name: pick(),
+  gender: pick().type(String),
+  age: pick().type(Number),
+  contacts: pick().apply({
+    email: pick().type(String),
+    phone: pick("phone.0")
+      .pipe((phone) => phone?.replace(/-/g, ""))
+      .type(Number),
+  }),
+  balance: pick().type(Number),
+  online: pick().type(Boolean),
+};
+
+/*
+Feature is also available in child schemas for methods .map, switch, apply, switchMap...
+{
+  // No runtime type check
+  name: "Bird Ramsey",
+
+  // Ensure that gender is string value
+  gender: "1",
+
+  // Convert age to number
+  age: 23,
+
+  contacts: {
+    // Try to convert email to string, if NOT null or undefined
+    email: null,
+    phone: 5372134121,
+  },
+
+  // If result of number tranformation is NaN skip field
+  balance: undefined,
+
+  // Ensure value is boolean
+  online: false,
+}
+*/
+```
+
+### Generate ts interface from mapping schema
+
+|                 | `getInterface(schema, interfaceName, exported)` |
+| --------------- | ----------------------------------------------- |
+| `schema`        | schema to generate types from                   |
+| `interfaceName` | name for interface, default is SchemaType       |
+| `exported`      | should interface be exported, default is false  |
+
+```javascript
+const schema = {
+  type: "User schema",
+
+  age: pick(),
+
+  userEmail: pick("contacts.email").type(String),
+
+  "details.company.info": pick("company")
+    .type(String)
+    .fallback("no company info"),
+  "details.age": pick("company").type(String).fallback("no company info"),
+
+  uuid: pick().type(Number),
+
+  id: pick().type(Number).fallback(0),
+
+  gender: pick()
+    .pipe((gender) => gender?.toUpperCase())
+    .type(String),
+
+  pagination: pick("info").apply({
+    nextAvailable: pick("next").type(Boolean).fallback(false),
+    "deep.prevAvailable": pick("prev").type(Boolean).fallback(false),
+    next: pick().type(String),
+    prev: pick().type(String),
+    "...": pick("nestedSpread"),
+  }),
+
+  edisodes: pick("results").map({
+    id: pick("_id"),
+    name: pick().fallback("no name").type(String),
+  }),
+
+  person: pick().switch(
+    {
+      adult: adultSchema,
+      child: childSchema,
+    },
+    (person) => person.age
+  ),
+
+  jobList: pick().switchMap(
+    {
+      true: {
+        isActive: pick().fallback(false).type(Boolean),
+        company: pick(),
+      },
+      false: {
+        isActive: pick().fallback(true).type(Boolean),
+        activeFrom: pick("start").type(String),
+        company: pick(),
+      },
+    },
+    (employment) => Boolean(employment.end)
+  ),
+
+  "...": pick("contacts"),
+
+  "...2": pick("contact2"),
+};
+
+import { getInterface } from "./mapper";
+
+console.log(getInterface(exampleSchema, "UserForm", true));
+
+/*
+export interface UserForm {
+  type?: any;
+  age?: unknown;
+  userEmail?: string;
+  details?: { company?: { info: string }; age: string };
+  uuid?: number;
+  id: number;
+  gender?: string;
+  pagination?: {
+    nextAvailable: boolean;
+    deep?: { prevAvailable: boolean };
+    next?: string;
+    prev?: string;
+    [property: string]: any;
+  };
+  edisodes?: Array<{ id?: unknown; name: string }>;
+  person?: { media: number } | { media?: boolean };
+  jobList?: Array<
+    | { isActive: boolean; company?: unknown }
+    | { isActive: boolean; activeFrom?: string; company?: unknown }
+  >;
+  [property: string]: any;
 }
 */
 ```

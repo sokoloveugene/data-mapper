@@ -1,4 +1,4 @@
-import { getChildTypeDefinition, getRootTypeDefinition } from "./generator.js";
+import { _getChildTypeDefinition, _getRootTypeDefinition } from "./generator.js";
 import { dummy, MODE } from "./utils.js";
 
 export class Scope {
@@ -19,9 +19,9 @@ export class Scope {
 
   getTypeDefinition() {
     return {
-      type: getRootTypeDefinition(this),
+      type: _getRootTypeDefinition(this),
       optional: this.fallback === dummy,
-      child: getChildTypeDefinition(this),
+      child: _getChildTypeDefinition(this),
     };
   }
 }
