@@ -5,10 +5,10 @@
 Utility to copy properties from one `Object` to another based
 on schema, which defines which properties should be mapped and how with runtime type check.
 
-## Installation TBD
+## Installation
 
 ```shell
-$ npm install --save
+$ npm install meta-shape
 ```
 
 ---
