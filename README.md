@@ -2,8 +2,7 @@
 
 ## About
 
-Utility to copy properties from one `Object` to another based
-on schema, which defines which properties should be mapped and how with runtime type check.
+A tool that transfers properties from one object to another according to a schema, which outlines the properties that should be mapped and the manner in which they should be mapped, with a runtime type verification.
 
 ## Installation
 
@@ -13,25 +12,24 @@ $ npm install meta-shape
 
 ---
 
-## Available features
+## Featured Capabilities
 
-- set static value
-- bypass property as is
-- set default value (can be function)
-- modify property with functions before set
-- apply reusable schema
-- apply schema for each element in array
-- apply schema for some elements in array
-- switch case
-- switch case for every item in array
-- spread object
-- reduce list to map
-- runtime type transformation
-- generate ts interface from mapping schema (getInterface function)
+- Setting a static value
+- Bypassing a property as is
+- Setting a default value (which can be a function)
+- Modifying a property with functions prior to setting
+- Applying a reusable schema
+- Applying a schema to each element in an array
+- Applying a schema to selected elements in an array
+- Switch case implementation
+- Switch case implementation for each item in an array
+- Spreading an object
+- Reducing a list to a map
+- Performing runtime type transformations
+- Generating a TypeScript interface from a mapping schema (using the "getInterface" function)
 
-## Usage
-
-A schema object `key` is the final **destination** `value` is the `command` to pick element, modify and set to the **destination** object as the `value`.
+## How to Use
+In a schema object, the "key" represents the final "destination," and the "value" is a "command" that selects an element, makes modifications, and sets it to the "destination" object as its "value."
 
 ### Base usage
 
@@ -58,30 +56,30 @@ const schema = {
   // Define static value
   type: "User schema",
 
-  // Bypass property and ensure that value is number (runtime)
+  // Bypass the property while verifying that the value is a number at runtime.
   age: pick().type(Number),
 
-  // Create property userEmail from deep nested property contacts.email
+  // Generate a "userEmail" property from the deeply nested "contacts.email" property.
   userEmail: pick("contacts.email").type(String),
 
-  // Create deep property
+  // Generate a deep property "details.company" by extracting it from the "company" property.
   "details.company": pick("company"),
 
-  // Set default value as 0
+  // Set default value as 0.
   id: pick().fallback(0),
 
-  // Call function to get default value
+  // Take "uuid" property and if it is undefined use uuidv4 to generate default value.
   uuid: pick().fallback(uuidv4),
 
-  // Get value and modify with function
+  // Retrieve the "gender" value, modify it using a function, and then save it.
   gender: pick().pipe((gender) => gender.toUpperCase()),
 
-  // Get multiple values to calculate result
+  // Get multiple values to calculate result.
   fullName: pick("name", "surname").pipe(
     (name, surname) => `${name} ${surname}`
   ),
 
-  // Modify value with functions one by one
+  // Modify value with functions one by one.
   phone: pick("contacts.phone").pipe(
     (phoneList) => phoneList.map((phoneItem) => `+${phoneItem}`),
     (phoneList) => phoneList.join(" or ")
@@ -146,7 +144,7 @@ const schema = {
 */
 ```
 
-### Apply reusable schema for every element of array
+### Apply reusable schema for each element of array
 
 |          | `.map(schema)`                       |
 | -------- | ------------------------------------ |
@@ -267,7 +265,7 @@ const schema = {
 */
 ```
 
-### Switch case for every item in the list
+### Switch case for each element in the list
 
 |             | `.switchMap(schemaMap, function)`      |
 | ----------- | -------------------------------------- |
