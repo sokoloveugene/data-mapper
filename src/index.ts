@@ -1,8 +1,12 @@
 import { set, isInstanceOf, isUndefined, isObject } from "./utils.js";
-import { FieldMapper } from "./mapper.js";
+import { FieldMapper } from "./mapper";
 import { getInterface as _getInterface } from "./generator.js";
+import { TMappingSchema } from "./types";
 
-export const convert = (schema, data) => {
+export const convert = (
+  schema: TMappingSchema,
+  data: unknown
+): Record<string, unknown> => {
   if (!isObject(data)) data = {};
 
   const result = {};
@@ -22,6 +26,6 @@ export const convert = (schema, data) => {
   return result;
 };
 
-export const pick = (...keys) => new FieldMapper(keys);
+export const pick = (...keys: string[]) => new FieldMapper(keys);
 
 export const getInterface = _getInterface;

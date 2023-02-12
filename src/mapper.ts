@@ -1,86 +1,91 @@
-import { MODE, get, dummy, isUndefined, isNullOrUndefined } from "./utils.js";
+import { MODE, get, dummy, isUndefined, isNullOrUndefined } from "./utils";
 import { EXECUTORS } from "./executors";
-import { Scope } from "./scope.js";
+import { Scope } from "./scope";
+import { TConstructor, TMappingSchema, TScope } from "./types";
 
 export class FieldMapper {
-  constructor(keys = []) {
+  scope: TScope;
+
+  constructor(keys: string[] = []) {
     this.scope = new Scope();
     this.scope.keys = keys;
   }
 
-  type(constructor) {
+  type(constructor: TConstructor) {
     this.scope.type = constructor;
     return this;
   }
 
-  pipe(...fns) {
+  pipe(...fns: Function[]) {
     this.scope.actions.push(...fns);
     return this;
   }
 
-  fallback(value) {
+  fallback(value: Function | unknown) {
     this.scope.fallback = typeof value === "function" ? value : () => value;
     return this;
   }
 
-  apply(schema) {
+  apply(schema: TMappingSchema) {
     this.scope.childSchema = schema;
     this.scope.mode = MODE.APPLY;
     return this;
   }
 
-  map(schema) {
+  map(schema: TMappingSchema) {
     this.scope.childSchema = schema;
     this.scope.mode = MODE.MAP;
     return this;
   }
 
-  mapWhen(schema, predicate = dummy) {
+  mapWhen(schema: TMappingSchema, predicate: Function = dummy) {
     this.scope.childSchema = schema;
     this.scope.predicate = predicate;
     this.scope.mode = MODE.MAP_WHEN;
     return this;
   }
 
-  switch(switchMap, predicate = dummy) {
+  switch(switchMap: Record<string, TMappingSchema>, predicate = dummy) {
     this.scope.switchMap = switchMap;
     this.scope.predicate = predicate;
     this.scope.mode = MODE.SWITCH;
     return this;
   }
 
-  switchMap(switchMap, predicate = dummy) {
+  switchMap(switchMap: Record<string, TMappingSchema>, predicate = dummy) {
     this.scope.switchMap = switchMap;
     this.scope.predicate = predicate;
     this.scope.mode = MODE.SWITCH_MAP;
     return this;
   }
 
-  reduce(predicate = dummy, schema) {
+  reduce(predicate = dummy, schema: TMappingSchema) {
     this.scope.predicate = predicate;
     this.scope.childSchema = schema;
     this.scope.mode = MODE.REDUCE;
     return this;
   }
 
-  _setDestination(path) {
+  _setDestination(path: string) {
     if (!this.scope.keys.length) {
       this.scope.keys = [path];
     }
     return this;
   }
 
-  _execute(data) {
-    const initial = this.scope.keys.map((key) => get(data, key));
+  _execute(data: unknown) {
+    const initial = this.scope.keys.map((key) => get(data, key, undefined));
     const value = EXECUTORS[this.scope.mode](
       this.scope,
+      //@ts-ignore
       this.scope.withActions(initial)
     );
 
     const withType =
       isUndefined(this.scope.type) || isNullOrUndefined(value)
         ? value
-        : this.scope.type(value);
+        : //@ts-ignore
+          this.scope.type(value);
 
     return Number.isNaN(withType) ? undefined : withType;
   }

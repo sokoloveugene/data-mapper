@@ -1,7 +1,20 @@
-import { _getChildTypeDefinition, _getRootTypeDefinition } from "./generator.js";
+import {
+  _getChildTypeDefinition,
+  _getRootTypeDefinition,
+} from "./generator.js";
+import { TScope, TMappingSchema, TConstructor } from "./types.js";
 import { dummy, MODE } from "./utils.js";
 
-export class Scope {
+export class Scope implements TScope {
+  mode: string;
+  keys: string[];
+  actions: Function[];
+  fallback: Function;
+  childSchema?: TMappingSchema;
+  switchMap: Record<string, TMappingSchema>;
+  predicate: Function;
+  type?: TConstructor;
+
   constructor() {
     this.mode = MODE.DEFAULT;
     this.keys = [];
@@ -13,7 +26,7 @@ export class Scope {
     this.type = undefined;
   }
 
-  withActions(initial) {
+  withActions(initial: any) {
     return this.actions.reduce((composed, f) => [f(...composed)], initial)[0];
   }
 

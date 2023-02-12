@@ -1,8 +1,9 @@
-import { isUndefined } from "../utils.js";
-import { convert } from "../index.js";
+import { isUndefined } from "../utils";
+import { convert } from "../index";
+import { TScope } from "../types";
 
-export const switchMapExecutor = (scope, values) => {
-  const mapped = values?.reduce((acc, value) => {
+export const switchMapExecutor = (scope: TScope, values: unknown[]) => {
+  const mapped = values?.reduce((acc: unknown[], value) => {
     const type = scope.predicate(value);
     const schemaByType = scope.switchMap?.[type];
     const isValid = !!schemaByType;
