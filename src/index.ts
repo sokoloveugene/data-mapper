@@ -3,16 +3,18 @@ import { FieldMapper } from "./mapper";
 import { getInterface as _getInterface } from "./generator.js";
 import { TMappingSchema } from "./types";
 
-export const convert = (
-  schema: TMappingSchema,
+export const convert = <T = TMappingSchema>(
+  schema: T,
   data: unknown
 ): Record<string, unknown> => {
   if (!isObject(data)) data = {};
 
   const result = {};
 
-  for (const [destination, config] of Object.entries(schema)) {
-    const value = isInstanceOf(config, "FieldMapper")
+  for (const [destination, config] of Object.entries(
+    schema as TMappingSchema
+  )) {
+    const value = isInstanceOf(config, FieldMapper)
       ? config._setDestination(destination)._execute(data)
       : config;
 

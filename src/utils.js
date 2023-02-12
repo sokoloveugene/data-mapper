@@ -10,8 +10,7 @@ export const isUndefined = (val) => val === undefined;
 
 export const dummy = () => undefined;
 
-export const isInstanceOf = (obj, constrName) =>
-  obj && obj.constructor && obj.constructor.name === constrName;
+export const isInstanceOf = (obj, constructor) => obj instanceof constructor;
 
 export const set = (object, path, value) => {
   let index = -1;

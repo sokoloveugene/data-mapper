@@ -33,8 +33,3 @@ export interface FieldMapper {
 }
 
 export type TMappingSchema = Record<string, FieldMapper>;
-
-export type TConvert = (
-  schema: TMappingSchema,
-  data: unknown
-) => Record<string, unknown>;

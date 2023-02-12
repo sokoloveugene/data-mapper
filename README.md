@@ -1,4 +1,4 @@
-# meta-mapper
+# meta-shape
 
 ## About
 
@@ -36,7 +36,7 @@ A schema object `key` is the final **destination** `value` is the `command` to p
 ### Base usage
 
 ```javascript
-import { pick } from "../src/mapper";
+import { pick } from "meta-shape";
 import { v4 as uuidv4 } from "uuid";
 
 const src = {
@@ -61,10 +61,10 @@ const schema = {
   // Bypass property and ensure that value is number (runtime)
   age: pick().type(Number),
 
-  // Save with new key deep nested property
+  // Create property userEmail from deep nested property contacts.email
   userEmail: pick("contacts.email").type(String),
 
-  // Set deep property
+  // Create deep property
   "details.company": pick("company"),
 
   // Set default value as 0
@@ -525,7 +525,7 @@ const schema = {
   "...2": pick("contact2"),
 };
 
-import { getInterface } from "./mapper";
+import { getInterface } from "meta-shape";
 
 console.log(getInterface(exampleSchema, "UserForm", true));
 

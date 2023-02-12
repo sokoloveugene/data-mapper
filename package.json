@@ -1,6 +1,6 @@
 {
   "name": "meta-shape",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Change json shape using meta schemas",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
