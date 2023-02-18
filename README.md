@@ -29,12 +29,13 @@ $ npm install meta-shape
 - Generating a TypeScript interface from a mapping schema (using the "getInterface" function)
 
 ## How to Use
+
 In a schema object, the "key" represents the final "destination," and the "value" is a "command" that selects an element, makes modifications, and sets it to the "destination" object as its "value."
 
 ### Base usage
 
 ```javascript
-import { pick } from "meta-shape";
+import { pick, convert } from "meta-shape";
 import { v4 as uuidv4 } from "uuid";
 
 const src = {
@@ -472,6 +473,7 @@ const schema = {
   "details.company.info": pick("company")
     .type(String)
     .fallback("no company info"),
+
   "details.age": pick("company").type(String).fallback("no company info"),
 
   uuid: pick().type(Number),
