@@ -1,7 +1,15 @@
-import { MODE, get, dummy, isUndefined, isNullOrUndefined } from "./utils";
+import {
+  MODE,
+  get,
+  dummy,
+  isUndefined,
+  isNullOrUndefined,
+  isContextPath,
+  resoveContextPath,
+} from "./utils";
 import { EXECUTORS } from "./executors";
 import { Scope } from "./scope";
-import { TConstructor, TMappingSchema, TScope } from "./types";
+import { TConstructor, TMappingSchema, TOptions, TScope } from "./types";
 
 export class FieldMapper {
   scope: TScope;
@@ -73,12 +81,19 @@ export class FieldMapper {
     return this;
   }
 
-  _execute(data: unknown) {
-    const initial = this.scope.keys.map((key) => get(data, key, undefined));
+  _execute(data: unknown, options: TOptions) {
+    const values = this.scope.keys.map((key) => {
+      const [source, path] = isContextPath(options.contextPrefix, key)
+        ? [options.context, resoveContextPath(options.contextPrefix, key)]
+        : [data, key];
+      return get(source, path);
+    });
+
     const value = EXECUTORS[this.scope.mode](
       this.scope,
       //@ts-ignore
-      this.scope.withActions(initial)
+      this.scope.withActions(values),
+      options
     );
 
     const withType =

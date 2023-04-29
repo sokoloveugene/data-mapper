@@ -10,6 +10,7 @@ const src = {
   },
   balance: "$3,946.45",
   online: 0,
+  cardNumber: "",
 };
 
 describe("Normalize types", () => {
@@ -28,6 +29,7 @@ describe("Normalize types", () => {
       contacts: pick().apply(contactSchema),
       balance: pick().type(Number),
       online: pick().type(Boolean),
+      cardNumber: pick().type(Number),
     };
 
     const expected = {
@@ -40,6 +42,7 @@ describe("Normalize types", () => {
       },
       balance: undefined,
       online: false,
+      cardNumber: 0,
     };
 
     expect(convert(schema, src)).toEqual(expected);

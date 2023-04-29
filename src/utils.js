@@ -38,22 +38,18 @@ export const set = (object, path, value) => {
 };
 
 export const get = (obj, path, defaultValue) => {
-  if (!path || !isObject(obj)) {
+  if (!obj || typeof obj !== "object") {
     return defaultValue;
   }
-
   const chunks = path.split(/[,[\].]+?/).filter(Boolean);
-
-  const result = chunks.reduce(
-    (result, key) => (isNullOrUndefined(result) ? result : result[key]),
-    obj
-  );
-
-  return isUndefined(result) || result === obj
-    ? isUndefined(obj[path])
-      ? defaultValue
-      : obj[path]
-    : result;
+  let result = obj;
+  for (const chunk of chunks) {
+    if (result === null || result === undefined) {
+      break;
+    }
+    result = result[chunk];
+  }
+  return result === undefined ? defaultValue : result;
 };
 
 export const MODE = {
@@ -64,4 +60,20 @@ export const MODE = {
   SWITCH: "SWITCH",
   SWITCH_MAP: "SWITCH_MAP",
   REDUCE: "REDUCE",
+};
+
+export const DEFAULT_CONTEXT_PREFIX = "$";
+
+const getPrefixRegex = (contextPrefix) => {
+  return new RegExp(`^${"\\"}${contextPrefix}${"\\.?"}`);
+};
+
+export const isContextPath = (contextPrefix, path) => {
+  return getPrefixRegex(contextPrefix).test(path);
+};
+
+export const resoveContextPath = (contextPrefix, path) => {
+  return isContextPath(contextPrefix, path)
+    ? path.replace(getPrefixRegex(contextPrefix), "")
+    : path;
 };

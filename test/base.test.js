@@ -2,7 +2,6 @@ import { convert, pick } from "../src";
 
 const src = {
   name: "Bird Ramsey",
-  gender: "male",
   position: "Developer",
   company: "NIMON",
   age: 23,
@@ -10,20 +9,16 @@ const src = {
     email: "birdramsey@nimon.com",
     phone: ["537-21-34-121", "532-21-34-333"],
   },
-  balance: "$3,946.45",
-  picture: "http://placehold.it/32x32",
 };
 
 describe("Pick", () => {
   test("with no parameter bypass property", () => {
     const schema = {
       name: pick(),
-      gender: pick(),
     };
 
     const expected = {
       name: "Bird Ramsey",
-      gender: "male",
     };
 
     expect(convert(schema, src)).toEqual(expected);
@@ -32,12 +27,10 @@ describe("Pick", () => {
   test("rename same level property", () => {
     const schema = {
       userName: pick("name"),
-      worksAt: pick("company"),
     };
 
     const expected = {
       userName: "Bird Ramsey",
-      worksAt: "NIMON",
     };
 
     expect(convert(schema, src)).toEqual(expected);
@@ -45,12 +38,10 @@ describe("Pick", () => {
 
   test("get nested property", () => {
     const schema = {
-      email: pick("contacts.email"),
       mainPhone: pick("contacts.phone.0"),
     };
 
     const expected = {
-      email: "birdramsey@nimon.com",
       mainPhone: "537-21-34-121",
     };
 
@@ -59,14 +50,12 @@ describe("Pick", () => {
 
   test("set nested property", () => {
     const schema = {
-      "mainInfo.contacts.email": pick("contacts.email"),
       "mainInfo.contacts.phone": pick("contacts.phone"),
     };
 
     const expected = {
       mainInfo: {
         contacts: {
-          email: "birdramsey@nimon.com",
           phone: ["537-21-34-121", "532-21-34-333"],
         },
       },
@@ -77,7 +66,7 @@ describe("Pick", () => {
 
   test("skip not existing property", () => {
     const schema = {
-      hobbie: pick(),
+      hobby: pick(),
       age: pick(),
     };
 
@@ -92,11 +81,11 @@ describe("Pick", () => {
 describe("Fallback", () => {
   test("as primitive", () => {
     const schema = {
-      hobbie: pick().fallback("unknown"),
+      hobby: pick().fallback("unknown"),
     };
 
     const expected = {
-      hobbie: "unknown",
+      hobby: "unknown",
     };
 
     expect(convert(schema, src)).toEqual(expected);

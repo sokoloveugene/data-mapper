@@ -1,11 +1,24 @@
-import { set, isInstanceOf, isUndefined, isObject } from "./utils.js";
+import {
+  set,
+  isInstanceOf,
+  isUndefined,
+  isObject,
+  DEFAULT_CONTEXT_PREFIX,
+} from "./utils.js";
 import { FieldMapper } from "./mapper";
 import { getInterface as _getInterface } from "./generator.js";
-import { TMappingSchema } from "./types";
+import { TMappingSchema, TOptions } from "./types";
+
+const defaultOptions = {
+  context: undefined,
+  contextPrefix: DEFAULT_CONTEXT_PREFIX,
+};
+
 
 export const convert = <T = TMappingSchema>(
   schema: T,
-  data: unknown
+  data: unknown,
+  optionsOverride: Partial<TOptions>
 ): Record<string, unknown> => {
   if (!isObject(data)) data = {};
 
@@ -15,7 +28,9 @@ export const convert = <T = TMappingSchema>(
     schema as TMappingSchema
   )) {
     const value = isInstanceOf(config, FieldMapper)
-      ? config._setDestination(destination)._execute(data)
+      ? config
+          ._setDestination(destination)
+          ._execute(data, { ...defaultOptions, ...optionsOverride })
       : config;
 
     if (isUndefined(value)) continue;

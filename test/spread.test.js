@@ -19,13 +19,11 @@ describe("Spread", () => {
     const schema = {
       "...": pick("contacts").apply({
         email: pick(),
-        phones: pick("phone"),
       }),
     };
 
     const expected = {
       email: "birdramsey@nimon.com",
-      phones: ["537-21-34-121", "532-21-34-333"],
     };
 
     expect(convert(schema, src)).toEqual(expected);

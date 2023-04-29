@@ -29,7 +29,12 @@ export interface FieldMapper {
   ): this;
   reduce(predicate: Function, schema: TMappingSchema): this;
   _setDestination(path: string): this;
-  _execute(data: unknown): Record<string, any>;
+  _execute(data: unknown, context: unknown): Record<string, any>;
 }
 
 export type TMappingSchema = Record<string, FieldMapper>;
+
+export type TOptions = {
+  context: unknown;
+  contextPrefix: string;
+};

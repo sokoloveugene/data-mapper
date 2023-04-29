@@ -1,6 +1,10 @@
 import { convert } from "../index";
-import { TScope } from "../types";
+import { TOptions, TScope } from "../types";
 
-export const applyExecutor = (scope: TScope, value: unknown) => {
-  return convert(scope.childSchema!, value);
+export const applyExecutor = (
+  scope: TScope,
+  value: unknown,
+  options: TOptions
+) => {
+  return convert(scope.childSchema!, value, options);
 };
