@@ -145,4 +145,16 @@ describe("Pipe", () => {
 
     expect(convert(schema, src)).toEqual(expected);
   });
+
+  test("multiple pipes", () => {
+    const schema = {
+      job: pick("position", "company").pipe(toJob).pipe(toUpperCase),
+    };
+
+    const expected = {
+      job: "WORKS AT NIMON AS DEVELOPER",
+    };
+
+    expect(convert(schema, src)).toEqual(expected);
+  });
 });

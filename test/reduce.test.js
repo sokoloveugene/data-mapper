@@ -13,10 +13,12 @@ describe("Reduce", () => {
   test("into same key", () => {
     const schema = {
       id: pick(),
-      calendar: pick().reduce((item) => `day-${item.day}`, {
-        day: pick(),
-        todo: pick("task"),
-      }),
+      calendar: pick()
+        .each((item) => `day-${item.day}`)
+        .reduce({
+          day: pick(),
+          todo: pick("task"),
+        }),
     };
 
     const expected = {
@@ -34,9 +36,11 @@ describe("Reduce", () => {
   test("with spread", () => {
     const schema = {
       id: pick(),
-      "...": pick("calendar").reduce((item) => `day-${item.day}`, {
-        todo: pick("task"),
-      }),
+      "...": pick("calendar")
+        .each((item) => `day-${item.day}`)
+        .reduce({
+          todo: pick("task"),
+        }),
     };
 
     const expected = {

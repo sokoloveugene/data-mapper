@@ -9,7 +9,7 @@ export const reduceExecutor = (
   return values?.reduce(
     (acc: Record<string, unknown>, item) => ({
       ...acc,
-      [scope.predicate(item)]: convert(scope.childSchema!, item, options),
+      [scope.filter(item)]: convert(scope.childSchema!, item, options),
     }),
     {}
   );

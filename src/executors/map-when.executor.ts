@@ -8,7 +8,7 @@ export const mapWhenExecutor = (
   options: TOptions
 ) => {
   const mapped = (values ?? []).reduce((acc: unknown[], value): unknown[] => {
-    const isValid = scope.predicate(value);
+    const isValid = scope.filter(value);
     return isValid
       ? [...acc, convert(scope.childSchema!, value, options)]
       : acc;

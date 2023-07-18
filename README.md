@@ -12,98 +12,62 @@ $ npm install meta-shape
 
 ---
 
-## Featured Capabilities
-
-- Setting a static value
-- Bypassing a property as is
-- Setting a default value (which can be a function)
-- Modifying a property with functions prior to setting
-- Applying a reusable schema
-- Applying a schema to each element in an array
-- Applying a schema to selected elements in an array
-- Switch case implementation
-- Switch case implementation for each item in an array
-- Spreading an object
-- Reducing a list to a map
-- Performing runtime type transformations
-- Generating a TypeScript interface from a mapping schema (using the "getInterface" function)
-
 ## How to Use
 
-In a schema object, the "key" represents the final "destination," and the "value" is a "command" that selects an element, makes modifications, and sets it to the "destination" object as its "value."
+In a schema object, the "key" represents the final "destination," and the "value" is a "command" that selects data from "source", makes modifications, and sets it to the "destination" object as its "value."
 
 ### Base usage
 
 ```javascript
 import { pick, convert } from "meta-shape";
-import { v4 as uuidv4 } from "uuid";
 
-const src = {
+const input = {
   name: "Bird",
   surname: "Ramsey",
+  age: "23 years",
   gender: "male",
-  position: "Developer",
   company: "NIMON",
-  age: 23,
   contacts: {
-    email: "birdramsey@nimon.com",
-    phone: ["537-21-34-121", "532-21-34-333"],
+    email: {
+      primary: "birdramsey@nimon.com",
+    },
   },
-  balance: "$3,946.45",
-  picture: "http://placehold.it/32x32",
 };
 
+/*
+const output = {
+  id: null,
+  fullName: "Bird Ramsey",
+  age: 23,
+  gender: "M",
+  details: {
+    company: {
+      name: "NIMON",
+    },
+  },
+  email: "birdramsey@nimon.com",
+}
+*/
+
 const schema = {
-  // Define static value
-  type: "User schema",
+  id: pick().fallback(null),
 
-  // Bypass the property while verifying that the value is a number at runtime.
-  age: pick().type(Number),
-
-  // Generate a "userEmail" property from the deeply nested "contacts.email" property.
-  userEmail: pick("contacts.email").type(String),
-
-  // Generate a deep property "details.company" by extracting it from the "company" property.
-  "details.company": pick("company"),
-
-  // Set default value as 0.
-  id: pick().fallback(0),
-
-  // Take "uuid" property and if it is undefined use uuidv4 to generate default value.
-  uuid: pick().fallback(uuidv4),
-
-  // Retrieve the "gender" value, modify it using a function, and then save it.
-  gender: pick().pipe((gender) => gender.toUpperCase()),
-
-  // Get multiple values to calculate result.
   fullName: pick("name", "surname").pipe(
     (name, surname) => `${name} ${surname}`
   ),
 
-  // Modify value with functions one by one.
-  phone: pick("contacts.phone").pipe(
-    (phoneList) => phoneList.map((phoneItem) => `+${phoneItem}`),
-    (phoneList) => phoneList.join(" or ")
-  ),
+  age: pick().pipe((age) => Number.parseInt(age)),
+
+  gender: pick()
+    .pipe((gender) => gender.slice(0, 1))
+    .pipe((gender) => gender.toUpperCase()),
+
+  "details.company.name": pick("company"),
+
+  email: pick("contacts.email.primary"),
 };
 
-const result = convert(schema, src);
-
-/*
-{
-  type: "User schema",
-  age: 23,
-  userEmail: "birdramsey@nimon.com",
-  details: {
-    company: "NIMON",
-  },
-  id: 0,
-  uuid: "c52c83f0-09ec-11ed-861d-0242ac120002",
-  gender: "MALE",
-  fullName: "Bird Ramsey",
-  phone: "+537-21-34-121 or +532-21-34-333",
-}
-*/
+const output = convert(schema, input);
 ```
 
 ### Apply reusable schema
@@ -113,11 +77,11 @@ const result = convert(schema, src);
 | `schema` | Schema to map element |
 
 ```javascript
-const src = {
+const input = {
   info: {
     count: 51,
     pages: 3,
-    next: "https://rickandmortyapi.com/api/episode?page=2",
+    next: "/api/episode?page=2",
     prev: null,
   },
 };
@@ -134,25 +98,25 @@ const schema = {
 };
 
 /*
-{
+const output = {
   pagination: {
     nextAvailable: true,
     prevAvailable: false,
-    next: "https://rickandmortyapi.com/api/episode?page=2",
+    next: "/api/episode?page=2",
     prev: null,
-  }
-}
+  },
+};
 */
 ```
 
 ### Apply reusable schema for each element of array
 
-|          | `.map(schema)`                       |
-| -------- | ------------------------------------ |
-| `schema` | Schema to map every element in array |
+|          | `.apply(schema).each()`             |
+| -------- | ----------------------------------- |
+| `schema` | Schema to map each element in array |
 
 ```javascript
-const src = {
+const input = {
   results: [
     {
       _id: 1,
@@ -171,28 +135,28 @@ const episodeSchema = {
 };
 
 const schema = {
-  edisodes: pick("results").map(episodeSchema),
+  edisodes: pick("results").apply(episodeSchema).each(),
 };
 
 /*
-{
+const output = {
   edisodes: [
     { id: 1, name: "Pilot" },
     { id: 2, name: "Lawnmower Dog" },
   ],
-}
+};
 */
 ```
 
 ### Apply schema for some elements in array
 
-|            | `.mapWhen(schema, function)`                               |
-| ---------- | ---------------------------------------------------------- |
-| `schema`   | Schema to map element                                      |
-| `function` | A function that returns true when element should be mapped |
+|          | `.apply(schema).each(filter)`                              |
+| -------- | ---------------------------------------------------------- |
+| `schema` | Schema to map element                                      |
+| `filter` | A function that returns true when element should be mapped |
 
 ```javascript
-const src = {
+const input = {
   results: [
     {
       _id: 1,
@@ -213,28 +177,27 @@ const episodeSchema = {
 };
 
 const schema = {
-  edisodes: pick("results").mapWhen(
-    episodeSchema,
-    (episode) => episode.air_date === "December 9, 2013"
-  ),
+  edisodes: pick("results")
+    .apply(episodeSchema)
+    .each((episode) => episode.air_date === "December 9, 2013"),
 };
 
 /*
-{
+const output = {
   edisodes: [{ id: 2, name: "Lawnmower Dog" }],
-}
+};
 */
 ```
 
 ### Switch case
 
-|             | `.switch(schemaMap, function)`         |
+|             | `.switch(schemaMap).case(keygen)`      |
 | ----------- | -------------------------------------- |
 | `schemaMap` | {type: schema} object                  |
-| `function`  | A function that returns type of schema |
+| `keygen`    | A function that returns type of schema |
 
 ```javascript
-const src = {
+const input = {
   person: {
     age: "child",
     favoriteCartoon: "Cars",
@@ -250,31 +213,33 @@ const childSchema = {
 };
 
 const schema = {
-  person: pick().switch(
-    {
+  user: pick("person")
+    .switch({
       adult: adultSchema,
       child: childSchema,
-    },
-    (person) => person.age
-  ),
+    })
+    .case((person) => person.age),
 };
 
 /*
-{
-  media: "Cars"
-}
+const output = {
+  user: {
+    media: "Cars",
+  },
+};
 */
 ```
 
 ### Switch case for each element in the list
 
-|             | `.switchMap(schemaMap, function)`      |
-| ----------- | -------------------------------------- |
-| `schemaMap` | {type: schema} object                  |
-| `function`  | A function that returns type of schema |
+|             | `.switch(schemaMap).case(keygen).each(filter)`     |
+| ----------- | -------------------------------------------------- |
+| `schemaMap` | {type: schema} object                              |
+| `keygen`    | A function that returns type of schema             |
+| `filter`    | Optional function to exclude elements from mapping |
 
 ```javascript
-const src = {
+const input = {
   jobList: [
     {
       start: "October 2, 2019",
@@ -301,19 +266,19 @@ const currentEmploymentSchema = {
 };
 
 const schema = {
-  jobList: pick().switchMap(
-    {
+  jobList: pick()
+    .switch({
       true: previousEmploymentSchema,
       false: currentEmploymentSchema,
-    },
-    (employment) => Boolean(employment.end)
-  ),
+    })
+    .case((employment) => Boolean(employment.end))
+    .each(),
 };
 
 /*
-{
+const output = {
   jobList: [
-    { 
+    {
       isActive: false,
       company: "Super Shops",
     },
@@ -323,11 +288,13 @@ const schema = {
       company: "Custom Lawn Care",
     },
   ],
-}
+};
 */
 ```
 
 ### Spread object
+
+ TODO update README section
 
 ```javascript
 const src = {

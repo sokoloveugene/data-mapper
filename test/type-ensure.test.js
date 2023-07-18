@@ -40,7 +40,7 @@ describe("Normalize types", () => {
         email: null,
         phone: 5372134121,
       },
-      balance: undefined,
+      balance: NaN,
       online: false,
       cardNumber: 0,
     };

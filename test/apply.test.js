@@ -54,14 +54,14 @@ describe("Apply", () => {
     expect(convert(schema, src)).toEqual(expected);
   });
 
-  test("reusable schema for every element of array", () => {
+  test("reusable schema for each element of array", () => {
     const episodeSchema = {
       id: pick("_id"),
       name: pick(),
     };
 
     const schema = {
-      edisodes: pick("results").map(episodeSchema),
+      edisodes: pick("results").apply(episodeSchema).each(),
     };
 
     const expected = {
@@ -81,10 +81,9 @@ describe("Apply", () => {
     };
 
     const schema = {
-      edisodes: pick("results").mapWhen(
-        episodeSchema,
-        (episode) => episode.air_date === "December 9, 2013"
-      ),
+      edisodes: pick("results")
+        .apply(episodeSchema)
+        .each((episode) => episode.air_date === "December 9, 2013"),
     };
 
     const expected = {

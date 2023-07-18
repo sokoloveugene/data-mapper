@@ -38,13 +38,12 @@ describe("Switch", () => {
 
   test("for one item", () => {
     const schema = {
-      job: pick("employment").switch(
-        {
+      job: pick("employment")
+        .switch({
           true: previousEmploymentSchema,
           false: currentEmploymentSchema,
-        },
-        (employment) => Boolean(employment.end)
-      ),
+        })
+        .case((employment) => Boolean(employment.end)),
     };
 
     const expected = {
@@ -68,15 +67,15 @@ describe("Switch", () => {
     expect(convert(schema, src2)).toEqual(expected2);
   });
 
-  test("for every item in the list", () => {
+  test("for each item in the list", () => {
     const schema = {
-      list: pick().switchMap(
-        {
+      list: pick()
+        .switch({
           true: previousEmploymentSchema,
           false: currentEmploymentSchema,
-        },
-        (employment) => Boolean(employment.end)
-      ),
+        })
+        .case((employment) => Boolean(employment.end))
+        .each(),
     };
 
     const expected = {
@@ -86,6 +85,32 @@ describe("Switch", () => {
           company: "Super Shops",
           occupation: "Information security specialist",
         },
+        {
+          isActive: true,
+          from: "September 5, 2020",
+          company: "Custom Lawn Care",
+          occupation: "Human resources administrative assistant",
+        },
+      ],
+    };
+
+    const res = convert(schema, src3);
+    expect(res).toEqual(expected);
+  });
+
+  test("for some items in the list", () => {
+    const schema = {
+      list: pick()
+        .switch({
+          true: previousEmploymentSchema,
+          false: currentEmploymentSchema,
+        })
+        .case((employment) => Boolean(employment.end))
+        .each((employment) => !employment.company.startsWith("Super")),
+    };
+
+    const expected = {
+      list: [
         {
           isActive: true,
           from: "September 5, 2020",

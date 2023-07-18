@@ -1,6 +1,6 @@
 {
   "name": "meta-shape",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Change json shape using meta schemas",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,6 +23,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sokoloveugene/meta-mapper"
+    "url": "https://github.com/sokoloveugene/meta-shape"
   }
 }

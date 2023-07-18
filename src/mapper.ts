@@ -1,7 +1,6 @@
 import {
   MODE,
   get,
-  dummy,
   isUndefined,
   isNullOrUndefined,
   isContextPath,
@@ -9,23 +8,22 @@ import {
 } from "./utils";
 import { EXECUTORS } from "./executors";
 import { Scope } from "./scope";
-import { TConstructor, TMappingSchema, TOptions, TScope } from "./types";
+import { TMappingSchema, TOptions, TConverter } from "./types";
 
 export class FieldMapper {
-  scope: TScope;
+  scope = new Scope();
 
   constructor(keys: string[] = []) {
-    this.scope = new Scope();
     this.scope.keys = keys;
   }
 
-  type(constructor: TConstructor) {
-    this.scope.type = constructor;
+  type(converter: TConverter) {
+    this.scope.type = converter;
     return this;
   }
 
-  pipe(...fns: Function[]) {
-    this.scope.actions.push(...fns);
+  pipe(...converters: TConverter[]) {
+    this.scope.actions.push(...converters);
     return this;
   }
 
@@ -40,35 +38,26 @@ export class FieldMapper {
     return this;
   }
 
-  map(schema: TMappingSchema) {
-    this.scope.childSchema = schema;
-    this.scope.mode = MODE.MAP;
+  each(filter?: Function) {
+    this.scope.each = true;
+    if (filter) {
+      this.scope.filter = filter;
+    }
     return this;
   }
 
-  mapWhen(schema: TMappingSchema, predicate: Function = dummy) {
+  switch(schema: Record<string, TMappingSchema>) {
     this.scope.childSchema = schema;
-    this.scope.predicate = predicate;
-    this.scope.mode = MODE.MAP_WHEN;
-    return this;
-  }
-
-  switch(switchMap: Record<string, TMappingSchema>, predicate = dummy) {
-    this.scope.switchMap = switchMap;
-    this.scope.predicate = predicate;
     this.scope.mode = MODE.SWITCH;
     return this;
   }
 
-  switchMap(switchMap: Record<string, TMappingSchema>, predicate = dummy) {
-    this.scope.switchMap = switchMap;
-    this.scope.predicate = predicate;
-    this.scope.mode = MODE.SWITCH_MAP;
+  case(keygen: Function) {
+    this.scope.keygen = keygen;
     return this;
   }
 
-  reduce(predicate = dummy, schema: TMappingSchema) {
-    this.scope.predicate = predicate;
+  reduce(schema: TMappingSchema) {
     this.scope.childSchema = schema;
     this.scope.mode = MODE.REDUCE;
     return this;
@@ -96,12 +85,9 @@ export class FieldMapper {
       options
     );
 
-    const withType =
-      isUndefined(this.scope.type) || isNullOrUndefined(value)
-        ? value
-        : //@ts-ignore
-          this.scope.type(value);
-
-    return Number.isNaN(withType) ? undefined : withType;
+    return isUndefined(this.scope.type) || isNullOrUndefined(value)
+      ? value
+      : //@ts-ignore
+        this.scope.type(value);
   }
 }

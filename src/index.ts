@@ -14,7 +14,6 @@ const defaultOptions = {
   contextPrefix: DEFAULT_CONTEXT_PREFIX,
 };
 
-
 export const convert = <T = TMappingSchema>(
   schema: T,
   data: unknown,
@@ -29,6 +28,7 @@ export const convert = <T = TMappingSchema>(
   )) {
     const value = isInstanceOf(config, FieldMapper)
       ? config
+          // @ts-ignore
           ._setDestination(destination)
           ._execute(data, { ...defaultOptions, ...optionsOverride })
       : config;

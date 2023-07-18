@@ -1,4 +1,4 @@
-import { isUndefined } from "../utils";
+import { dummy, isUndefined } from "../utils";
 import { convert } from "../index";
 import { TOptions, TScope } from "../types";
 
@@ -8,8 +8,9 @@ export const switchMapExecutor = (
   options: TOptions
 ) => {
   const mapped = values?.reduce((acc: unknown[], value) => {
-    const type = scope.predicate(value);
-    const schemaByType = scope.switchMap?.[type];
+    if (scope.filter !== dummy && !scope.filter(value)) return acc;
+    const type = scope.keygen(value);
+    const schemaByType = (scope.childSchema ?? {})?.[type];
     const isValid = !!schemaByType;
     return isValid ? [...acc, convert(schemaByType, value, options)] : acc;
   }, []);
