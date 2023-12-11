@@ -1,6 +1,6 @@
 import { convert, pick } from "../src";
 
-const src = {
+const data = {
   name: "Bird Ramsey",
   position: "Developer",
   company: "NIMON",
@@ -21,7 +21,7 @@ describe("Pick", () => {
       name: "Bird Ramsey",
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({ schema, data })).toEqual(expected);
   });
 
   test("rename same level property", () => {
@@ -33,7 +33,7 @@ describe("Pick", () => {
       userName: "Bird Ramsey",
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({ schema, data })).toEqual(expected);
   });
 
   test("get nested property", () => {
@@ -45,7 +45,7 @@ describe("Pick", () => {
       mainPhone: "537-21-34-121",
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({ schema, data })).toEqual(expected);
   });
 
   test("set nested property", () => {
@@ -61,7 +61,7 @@ describe("Pick", () => {
       },
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({ schema, data })).toEqual(expected);
   });
 
   test("skip not existing property", () => {
@@ -74,7 +74,7 @@ describe("Pick", () => {
       age: 23,
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({ schema, data })).toEqual(expected);
   });
 });
 
@@ -88,7 +88,7 @@ describe("Fallback", () => {
       hobby: "unknown",
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({ schema, data })).toEqual(expected);
   });
 
   test("as complex data stucture", () => {
@@ -100,7 +100,7 @@ describe("Fallback", () => {
       hobbies: ["tennis", "programming"],
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({ schema, data })).toEqual(expected);
   });
 
   test("as function", () => {
@@ -114,7 +114,7 @@ describe("Fallback", () => {
       id: "a3918ac8-03a8-11ed-b939-0242ac120002",
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({ schema, data })).toEqual(expected);
   });
 });
 
@@ -131,19 +131,7 @@ describe("Pipe", () => {
       job: "Works at NIMON as Developer",
     };
 
-    expect(convert(schema, src)).toEqual(expected);
-  });
-
-  test("multiple functions", () => {
-    const schema = {
-      job: pick("position", "company").pipe(toJob, toUpperCase),
-    };
-
-    const expected = {
-      job: "WORKS AT NIMON AS DEVELOPER",
-    };
-
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({ schema, data })).toEqual(expected);
   });
 
   test("multiple pipes", () => {
@@ -155,6 +143,7 @@ describe("Pipe", () => {
       job: "WORKS AT NIMON AS DEVELOPER",
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({ schema, data })).toEqual(expected);
   });
 });
+

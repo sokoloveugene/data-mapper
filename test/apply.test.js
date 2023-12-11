@@ -1,6 +1,6 @@
 import { convert, pick } from "../src";
 
-const src = {
+const data = {
   info: {
     count: 51,
     pages: 3,
@@ -51,7 +51,7 @@ describe("Apply", () => {
       },
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({ schema, data })).toEqual(expected);
   });
 
   test("reusable schema for each element of array", () => {
@@ -71,7 +71,7 @@ describe("Apply", () => {
       ],
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({schema, data})).toEqual(expected);
   });
 
   test("reusable schema for some element of array", () => {
@@ -90,6 +90,6 @@ describe("Apply", () => {
       edisodes: [{ id: 2, name: "Lawnmower Dog" }],
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({schema, data})).toEqual(expected);
   });
 });

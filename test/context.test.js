@@ -1,16 +1,13 @@
 import { convert, pick } from "../src";
 
-const options = {
-  context: {
-    name: "John Dou",
-    gender: null,
-    email: "context@mail.com",
-    hobbies: null,
-  },
-  contextPrefix: "$",
+const context = {
+  name: "John Dou",
+  gender: null,
+  email: "context@mail.com",
+  hobbies: null,
 };
 
-const src = {
+const data = {
   name: "Bird Ramsey",
   gender: "male",
   email: "john@mail.com",
@@ -30,7 +27,7 @@ describe("With context", () => {
       name: "John Dou",
     };
 
-    expect(convert(schema, src, options)).toEqual(expected);
+    expect(convert({ schema, data, context })).toEqual(expected);
   });
 
   test("with context and current values", () => {
@@ -44,7 +41,7 @@ describe("With context", () => {
       gender: "male",
     };
 
-    expect(convert(schema, src, options)).toEqual(expected);
+    expect(convert({ schema, data, context })).toEqual(expected);
   });
 
   test("pick both context and current values", () => {
@@ -56,7 +53,7 @@ describe("With context", () => {
       emails: ["john@mail.com", "context@mail.com"],
     };
 
-    expect(convert(schema, src, options)).toEqual(expected);
+    expect(convert({ schema, data, context })).toEqual(expected);
   });
 
   test("pick both context and current values in any order", () => {
@@ -68,7 +65,7 @@ describe("With context", () => {
       emails: ["context@mail.com", "john@mail.com"],
     };
 
-    expect(convert(schema, src, options)).toEqual(expected);
+    expect(convert({ schema, data, context })).toEqual(expected);
   });
 
   test("compare current with context values", () => {
@@ -82,7 +79,7 @@ describe("With context", () => {
       isEmailChanged: true,
     };
 
-    expect(convert(schema, src, options)).toEqual(expected);
+    expect(convert({ schema, data, context })).toEqual(expected);
   });
 
   test("get full context when key is not specified", () => {
@@ -99,7 +96,7 @@ describe("With context", () => {
       },
     };
 
-    expect(convert(schema, src, options)).toEqual(expected);
+    expect(convert({ schema, data, context })).toEqual(expected);
   });
 
   test("context value in pipe handler", () => {
@@ -121,7 +118,7 @@ describe("With context", () => {
       name: "Bird Ramsey",
     };
 
-    expect(convert(schema, src, options)).toEqual(expected);
+    expect(convert({ schema, data, context })).toEqual(expected);
   });
 
   test("apply with context", () => {
@@ -152,6 +149,6 @@ describe("With context", () => {
       },
     };
 
-    expect(convert(schema, src, options)).toEqual(expected);
+    expect(convert({ schema, data, context })).toEqual(expected);
   });
 });

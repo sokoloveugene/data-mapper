@@ -1,6 +1,6 @@
 import { convert, pick } from "../src";
 
-const src = {
+const data = {
   employment: {
     start: "October 2, 2019",
     end: "July 10, 2021",
@@ -9,7 +9,7 @@ const src = {
   },
 };
 
-const src2 = {
+const data2 = {
   employment: {
     start: "September 5, 2020",
     end: null,
@@ -18,19 +18,19 @@ const src2 = {
   },
 };
 
-const src3 = {
-  list: [src.employment, src2.employment],
+const data3 = {
+  list: [data.employment, data2.employment],
 };
 
 describe("Switch", () => {
   const previousEmploymentSchema = {
-    isActive: false,
+    isActive: pick("_").fallback(false),
     company: pick(),
     occupation: pick(),
   };
 
   const currentEmploymentSchema = {
-    isActive: true,
+    isActive: pick("_").fallback(true),
     from: pick("start"),
     company: pick(),
     occupation: pick(),
@@ -63,8 +63,8 @@ describe("Switch", () => {
       },
     };
 
-    expect(convert(schema, src)).toEqual(expected);
-    expect(convert(schema, src2)).toEqual(expected2);
+    expect(convert({ schema, data })).toEqual(expected);
+    expect(convert({ schema, data: data2 })).toEqual(expected2);
   });
 
   test("for each item in the list", () => {
@@ -94,7 +94,7 @@ describe("Switch", () => {
       ],
     };
 
-    const res = convert(schema, src3);
+    const res = convert({ schema, data: data3 });
     expect(res).toEqual(expected);
   });
 
@@ -120,7 +120,7 @@ describe("Switch", () => {
       ],
     };
 
-    const res = convert(schema, src3);
+    const res = convert({ schema, data: data3 });
     expect(res).toEqual(expected);
   });
 });

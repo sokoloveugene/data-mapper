@@ -1,6 +1,6 @@
 import { convert, pick } from "../src";
 
-const src = {
+const data = {
   name: "Bird Ramsey",
   gender: 1,
   age: "23",
@@ -45,6 +45,6 @@ describe("Normalize types", () => {
       cardNumber: 0,
     };
 
-    expect(convert(schema, src)).toEqual(expected);
+    expect(convert({ schema, data })).toEqual(expected);
   });
 });
