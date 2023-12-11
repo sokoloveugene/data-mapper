@@ -335,3 +335,23 @@ const output = {
   online: false,
 };
 ```
+
+### Values can be picked from additional context "$"
+
+```javascript
+const data = {
+  email: "john@mail.com",
+};
+
+const context = {
+  email: "context@mail.com",
+};
+
+const schema = {
+  isEmailChanged: pick("email", "$.email").pipe((val1, val2) => val1 !== val2),
+};
+
+const output = convert({ schema, data, context });
+
+const output = { isEmailChanged: true };
+```
